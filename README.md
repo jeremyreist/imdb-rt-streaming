@@ -14,7 +14,7 @@ A chrome extension that adds ratings to streaming sites.
 
 ## Supported Streaming Sites
 - Supported:
-  - Netflx
+  - Netflix
   - Disney+
 - Coming soon: 
   - Prime Video
