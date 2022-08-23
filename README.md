@@ -11,6 +11,7 @@ A chrome extension that adds ratings to streaming sites.
     2. Check `Developer mode`
     3. Click on `Load unpacked extension`
     4. Select the `dist` folder
+4. For development use `npm run dev`
 
 ## Supported Streaming Sites
 - Supported:

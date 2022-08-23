@@ -6,10 +6,10 @@
   "content_scripts":[
     {
       "matches": [
-        "https://www.netflix.com/*"
+        "https://www.netflix.com/*",
+        "https://www.disneyplus.com/*"
       ],
       "js": [
-        "jquery-3.3.1.js",
         "main.js"
       ],
       "run_at": "document_end"
