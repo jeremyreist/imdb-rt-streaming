@@ -30,7 +30,6 @@ function onLoad(event: Event) {
     window.addEventListener("mousedown", function () {
       if (getTitleHref()){
         lastViewedTitleHref = getTitleHref();
-        console.log("clicked!: ", lastViewedTitleHref)
       }
     });
 
@@ -57,8 +56,6 @@ async function onDomChange() {
 
     if (getPageType() === PageType.Watching && previousDomChangeType != PageType.Watching){
       previousDomChangeType = PageType.Watching
-      console.log("WATCHING!")
-      console.log(lastViewedTitleHref);
       if (lastViewedTitleHref){
         getRatings(lastViewedTitleHref, true);
       }
@@ -75,7 +72,7 @@ async function onDomChange() {
     }
 
     // We can only load the rating on the details screen.
-    if (getPageType() === PageType.Details && previousDomChangeType != PageType.Details){
+    if (getPageType() === PageType.Details && lastViewedTitleHref != window.location.href){
       previousDomChangeType = PageType.Details
       lastViewedTitleHref = window.location.href;
       onDisneyDetailsScreen();

@@ -71,7 +71,6 @@ function onLoad(event) {
         window.addEventListener("mousedown", function () {
             if ((0, netflix_1.getTitleHref)()) {
                 lastViewedTitleHref = (0, netflix_1.getTitleHref)();
-                console.log("clicked!: ", lastViewedTitleHref);
             }
         });
     }
@@ -96,8 +95,6 @@ function onDomChange() {
                 }
                 if (getPageType() === PageType.Watching && previousDomChangeType != PageType.Watching) {
                     previousDomChangeType = PageType.Watching;
-                    console.log("WATCHING!");
-                    console.log(lastViewedTitleHref);
                     if (lastViewedTitleHref) {
                         (0, utils_1.getRatings)(lastViewedTitleHref, true);
                     }
@@ -112,7 +109,7 @@ function onDomChange() {
                     lastViewedTitleHref = null;
                 }
                 // We can only load the rating on the details screen.
-                if (getPageType() === PageType.Details && previousDomChangeType != PageType.Details) {
+                if (getPageType() === PageType.Details && lastViewedTitleHref != window.location.href) {
                     previousDomChangeType = PageType.Details;
                     lastViewedTitleHref = window.location.href;
                     (0, disney_1.onDisneyDetailsScreen)();
