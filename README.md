@@ -1,4 +1,4 @@
-<img align="right" style="width:64px; height:64px;"src="https://github.com/jeremyreist/imdb-rt-streaming/blob/main/listing/128.png" alt="IMDb & Rotten Tomaotes for Streaming">
+<img align="right" styles="width:64px; height:64px;"src="https://github.com/jeremyreist/imdb-rt-streaming/blob/main/listing/128.png" alt="IMDb & Rotten Tomaotes for Streaming">
 
 # IMDb & Rotten Tomaotes for Streaming
 A chrome extension that adds ratings to streaming sites.
