@@ -23,8 +23,8 @@ A chrome extension that adds ratings to streaming sites.
   - Hulu
 
 ## Filmtoro API
-id: the title link - e.g https://www.netflix.com/title/[ID] or https://www.disneyplus.com/[series or movie]/[ID]
-episode: the episode id - e.g.  80011816 (suits s5, e6) or 7a6eeb4b-050a-40b0-9018-dc46a5259195 (family guy s1, e3)
-api: the api key we use
-start: an integer between 0 and 100 (0% means first time watching, between 0 - 99% means continuing from before)
-end: an integer between 0 and 100 (1% means left after a few seconds, 98% means finished whole show)
+- id: the title link - e.g "https://www.netflix.com/title/[ID]" or "https://www.disneyplus.com/[series or movie]/[ID]"
+- episode: the episode id - e.g.  80011816 (suits s5, e6) or 7a6eeb4b-050a-40b0-9018-dc46a5259195 (family guy s1, e3)
+- api: the api key we use
+- start: an integer between 0 and 100 (0% means first time watching, between 0 - 99% means continuing from before)
+- end: an integer between 0 and 100 (1% means left after a few seconds, 98% means finished whole show)
