@@ -93,19 +93,17 @@ function getPageType(): PageType{
   if (currSite === StreamingSite.Netflix){
     if (window.location.href.indexOf("browse?jbv") > -1){
       currPage = PageType.Details
-    } else if (window.location.href.indexOf("browse") > -1 ){
-      currPage = PageType.Homepage
     } else if (window.location.href.indexOf("watch") > -1){
       currPage = PageType.Watching
     } else {
-      currPage = PageType.None
+      currPage = PageType.Homepage
     }
   }
 
   if (currSite === StreamingSite.DisneyPlus){
     if (window.location.href.indexOf("home") > -1){
       currPage = PageType.Homepage
-    } else if (window.location.href.indexOf("series") > -1 || window.location.href.indexOf("movie") > -1 ){
+    } else if (/.*\/(movies|series)\/.*\/.*/.test(window.location.href)){
       currPage = PageType.Details 
     } else if (window.location.href.indexOf("video") > -1){
       currPage = PageType.Watching
