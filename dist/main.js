@@ -45,7 +45,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 var disney_1 = __webpack_require__(831);
 var netflix_1 = __webpack_require__(309);
-var utils_1 = __webpack_require__(974);
 var StreamingSite;
 (function (StreamingSite) {
     StreamingSite[StreamingSite["Netflix"] = 0] = "Netflix";
@@ -96,12 +95,12 @@ function onDomChange() {
                 if (getPageType() === PageType.Watching && previousDomChangeType != PageType.Watching) {
                     previousDomChangeType = PageType.Watching;
                     if (lastViewedTitleHref) {
-                        (0, utils_1.getRatings)(lastViewedTitleHref, true);
+                        (0, netflix_1.onNetflixWatchPage)(lastViewedTitleHref);
                     }
                 }
             }
             if (currSite === StreamingSite.DisneyPlus) {
-                // We can't to disney plus ratings on hover on the main page
+                // We can't do disney plus ratings on hover on the main page
                 // this is because we don't have access to the link of the show/movie at any point, anywhere on the homepage.
                 // the most we can get is the title of the show in the current language, but that could cause issues.
                 if (getPageType() === PageType.Homepage && previousDomChangeType != PageType.Homepage) {
@@ -117,7 +116,7 @@ function onDomChange() {
                 if (getPageType() === PageType.Watching && previousDomChangeType != PageType.Watching) {
                     previousDomChangeType = PageType.Watching;
                     if (lastViewedTitleHref) {
-                        (0, utils_1.getRatings)(lastViewedTitleHref, true);
+                        (0, disney_1.onDisneyWatchPage)(lastViewedTitleHref);
                     }
                 }
             }
@@ -199,7 +198,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.onDisneyDetailsScreen = void 0;
+exports.onDisneyWatchPage = exports.onDisneyDetailsScreen = void 0;
 var utils_1 = __webpack_require__(974);
 function onDisneyDetailsScreen() {
     return __awaiter(this, void 0, void 0, function () {
@@ -208,7 +207,7 @@ function onDisneyDetailsScreen() {
             switch (_a.label) {
                 case 0:
                     titleHref = window.location.href;
-                    return [4 /*yield*/, (0, utils_1.getRatings)(titleHref, false)];
+                    return [4 /*yield*/, (0, utils_1.getRatings)({ id: titleHref })];
                 case 1:
                     ratings = _a.sent();
                     ratingsElement = document.createElement("h4");
@@ -239,6 +238,59 @@ function onDisneyDetailsScreen() {
     });
 }
 exports.onDisneyDetailsScreen = onDisneyDetailsScreen;
+function onDisneyWatchPage(titleHref) {
+    return __awaiter(this, void 0, void 0, function () {
+        var spliceIndex, episodeID, limit, endTime, startTime, durationString, durationSeconds, start, end;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    spliceIndex = window.location.href.indexOf("video/") + "video/".length;
+                    episodeID = window.location.href.slice(spliceIndex);
+                    limit = 0;
+                    (0, utils_1.getRatings)({ id: titleHref, episode: episodeID, click: true });
+                    _a.label = 1;
+                case 1:
+                    if (!(!document.getElementsByTagName('video').length || !document.getElementsByClassName('time-remaining-label').length || limit > 50)) return [3 /*break*/, 3];
+                    limit += 1;
+                    return [4 /*yield*/, (0, utils_1.delay)(500)];
+                case 2:
+                    _a.sent();
+                    return [3 /*break*/, 1];
+                case 3:
+                    startTime = document.getElementsByTagName('video')[0].currentTime;
+                    durationString = document.getElementsByClassName('time-remaining-label')[0].textContent; // e.g 01:50:01
+                    durationSeconds = hmsToSecondsOnly(durationString);
+                    _a.label = 4;
+                case 4:
+                    if (!(window.location.href.indexOf("video/".concat(episodeID)) > 0)) return [3 /*break*/, 6];
+                    try {
+                        endTime = document.getElementsByTagName('video')[0].currentTime;
+                    }
+                    catch (_b) {
+                        return [3 /*break*/, 6];
+                    }
+                    return [4 /*yield*/, (0, utils_1.delay)(10)];
+                case 5:
+                    _a.sent();
+                    return [3 /*break*/, 4];
+                case 6:
+                    start = Math.floor((startTime / durationSeconds) * 100);
+                    end = Math.floor((endTime / durationSeconds) * 100);
+                    (0, utils_1.getRatings)({ id: titleHref, episode: episodeID, click: true, start: start, end: end });
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+exports.onDisneyWatchPage = onDisneyWatchPage;
+function hmsToSecondsOnly(str) {
+    var part = str.split(':'), seconds = 0, minutes = 1;
+    while (part.length > 0) {
+        seconds += minutes * parseInt(part.pop(), 10);
+        minutes *= 60;
+    }
+    return seconds;
+}
 
 
 /***/ }),
@@ -284,7 +336,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getTitleHref = exports.onNetflixHomepage = void 0;
+exports.getTitleHref = exports.onNetflixWatchPage = exports.onNetflixHomepage = void 0;
 var utils_1 = __webpack_require__(974);
 var lastViewedTitleHref = null;
 function onNetflixHomepage() {
@@ -303,6 +355,50 @@ function onNetflixHomepage() {
     });
 }
 exports.onNetflixHomepage = onNetflixHomepage;
+function onNetflixWatchPage(titleHref) {
+    return __awaiter(this, void 0, void 0, function () {
+        var spliceIndex, episodeID, limit, endTime, startTime, duration, start, end;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    spliceIndex = window.location.href.indexOf("watch/") + "watch/".length;
+                    episodeID = window.location.href.slice(spliceIndex, spliceIndex + 8);
+                    limit = 0;
+                    (0, utils_1.getRatings)({ id: titleHref, episode: episodeID, click: true });
+                    _a.label = 1;
+                case 1:
+                    if (!(!document.getElementsByTagName('video').length || limit > 50)) return [3 /*break*/, 3];
+                    limit += 1;
+                    return [4 /*yield*/, (0, utils_1.delay)(500)];
+                case 2:
+                    _a.sent();
+                    return [3 /*break*/, 1];
+                case 3:
+                    startTime = document.getElementsByTagName('video')[0].currentTime;
+                    duration = document.getElementsByTagName('video')[0].duration;
+                    _a.label = 4;
+                case 4:
+                    if (!(window.location.href.indexOf("watch/".concat(episodeID)) > 0)) return [3 /*break*/, 6];
+                    try {
+                        endTime = document.getElementsByTagName('video')[0].currentTime;
+                    }
+                    catch (_b) {
+                        return [3 /*break*/, 6];
+                    }
+                    return [4 /*yield*/, (0, utils_1.delay)(10)];
+                case 5:
+                    _a.sent();
+                    return [3 /*break*/, 4];
+                case 6:
+                    start = Math.floor((startTime / duration) * 100);
+                    end = Math.floor((endTime / duration) * 100);
+                    (0, utils_1.getRatings)({ id: titleHref, episode: episodeID, click: true, start: start, end: end });
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+exports.onNetflixWatchPage = onNetflixWatchPage;
 function handleTitleCardHover() {
     return __awaiter(this, void 0, void 0, function () {
         var parent, titleHref, ratings, ratingsElement;
@@ -312,7 +408,7 @@ function handleTitleCardHover() {
                     parent = document.getElementsByClassName("previewModal--metadatAndControls-container")[0];
                     (0, utils_1.addLoader)(parent);
                     titleHref = getTitleHref();
-                    return [4 /*yield*/, (0, utils_1.getRatings)(titleHref, false)];
+                    return [4 /*yield*/, (0, utils_1.getRatings)({ id: titleHref })];
                 case 1:
                     ratings = _a.sent();
                     ratingsElement = document.createElement("span");
@@ -353,6 +449,17 @@ exports.getTitleHref = getTitleHref;
 /***/ (function(__unused_webpack_module, exports) {
 
 
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -391,40 +498,43 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.removeLoader = exports.addLoader = exports.delay = exports.getRatings = void 0;
-function getRatings(titleHref, hasClicked) {
+function getRatings(params) {
     return __awaiter(this, void 0, void 0, function () {
-        var localRating, request, response, _a, request, response, _b;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
+        var _a, id, episode, _b, api, click, start, end, localRating, apiUrl, request, response, _c;
+        return __generator(this, function (_d) {
+            switch (_d.label) {
                 case 0:
-                    if (!!hasClicked) return [3 /*break*/, 5];
-                    return [4 /*yield*/, checkLocalStorage(titleHref)];
+                    _a = __assign({}, params), id = _a.id, episode = _a.episode, _b = _a.api, api = _b === void 0 ? "8mds8d7d55" : _b, click = _a.click, start = _a.start, end = _a.end;
+                    if (!!click) return [3 /*break*/, 2];
+                    return [4 /*yield*/, checkLocalStorage(id)];
                 case 1:
-                    localRating = _c.sent();
+                    localRating = _d.sent();
                     if (localRating) {
                         return [2 /*return*/, localRating];
                     }
-                    return [4 /*yield*/, fetch("https://filmtoro.com/api/watch.asp?id=".concat(titleHref, "&api=8mds8d7d55"))];
+                    _d.label = 2;
                 case 2:
-                    request = _c.sent();
-                    _a = formatApiData;
-                    return [4 /*yield*/, request.json()];
+                    apiUrl = new URL("https://filmtoro.com/api/watch.asp");
+                    apiUrl.searchParams.append('id', id);
+                    apiUrl.searchParams.append('api', api);
+                    if (typeof click !== 'undefined')
+                        apiUrl.searchParams.append('click', click.toString());
+                    if (typeof episode !== 'undefined')
+                        apiUrl.searchParams.append('episode', episode);
+                    if (typeof start !== 'undefined')
+                        apiUrl.searchParams.append('start', start.toString());
+                    if (typeof end !== 'undefined')
+                        apiUrl.searchParams.append('end', end.toString());
+                    return [4 /*yield*/, fetch(apiUrl)];
                 case 3:
-                    response = _a.apply(void 0, [_c.sent()]);
-                    return [4 /*yield*/, addToLocalStorage(titleHref, response)];
-                case 4:
-                    _c.sent();
-                    return [2 /*return*/, response];
-                case 5: return [4 /*yield*/, fetch("https://filmtoro.com/api/watch.asp?id=".concat(titleHref, "&api=8mds8d7d55&click=true"))];
-                case 6:
-                    request = _c.sent();
-                    _b = formatApiData;
+                    request = _d.sent();
+                    _c = formatApiData;
                     return [4 /*yield*/, request.json()];
-                case 7:
-                    response = _b.apply(void 0, [_c.sent()]);
-                    return [4 /*yield*/, addToLocalStorage(titleHref, response)];
-                case 8:
-                    _c.sent();
+                case 4:
+                    response = _c.apply(void 0, [_d.sent()]);
+                    return [4 /*yield*/, addToLocalStorage(id, response)];
+                case 5:
+                    _d.sent();
                     return [2 /*return*/, response];
             }
         });

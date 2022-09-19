@@ -1,4 +1,5 @@
 import { addLoader, delay, getRatings, removeLoader } from "../../utils/utils"
+declare var netflix: any
 
 var lastViewedTitleHref = null;
 export async function onNetflixHomepage(){
@@ -10,13 +11,49 @@ export async function onNetflixHomepage(){
     }
   }
 }
+ 
+export async function onNetflixWatchPage(titleHref: string){
+  const spliceIndex = window.location.href.indexOf("watch/") + "watch/".length;
+  const episodeID = window.location.href.slice(spliceIndex, spliceIndex + 8);
+  var limit = 0;
+
+  getRatings({id: titleHref, episode: episodeID, click: true});
+
+  // Waits for the video to load.
+  while (!document.getElementsByTagName('video').length || limit > 50){
+    limit += 1;
+    await delay(500);
+  }
+  var endTime: number
+  var startTime: number
+  var duration: number;
+
+  startTime = document.getElementsByTagName('video')[0].currentTime;
+  duration = document.getElementsByTagName('video')[0].duration;
+
+  // While we are still watching the show, update the end time.
+  while (window.location.href.indexOf(`watch/${episodeID}`) > 0){
+    try {
+      endTime = document.getElementsByTagName('video')[0].currentTime;
+    } catch {
+      break;
+    }
+    await delay(10);
+  }
+
+  const start = Math.floor((startTime / duration)*100);
+  const end = Math.floor((endTime / duration)*100);
+
+  getRatings({id: titleHref, episode: episodeID, click: true, start: start, end: end});
+
+}
 
 async function handleTitleCardHover() {
   const parent = document.getElementsByClassName("previewModal--metadatAndControls-container")[0]
   addLoader(parent);
 
   const titleHref = getTitleHref();
-  const ratings = await getRatings(titleHref, false);
+  const ratings = await getRatings({id: titleHref});
 
   const ratingsElement = document.createElement("span");
   ratingsElement.className = "previewModal--metadatAndControls-tags-container";
@@ -64,3 +101,4 @@ export function getTitleHref(): string | null {
     return null
   }
 }
+

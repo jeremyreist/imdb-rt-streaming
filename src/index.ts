@@ -1,5 +1,5 @@
-import { onDisneyDetailsScreen } from "./sites/disney+";
-import { getTitleHref, onNetflixHomepage } from "./sites/netflix";
+import { onDisneyDetailsScreen, onDisneyWatchPage } from "./sites/disney+";
+import { getTitleHref, onNetflixHomepage, onNetflixWatchPage } from "./sites/netflix";
 import { getRatings } from "./utils/utils";
 
 enum StreamingSite {
@@ -57,13 +57,13 @@ async function onDomChange() {
     if (getPageType() === PageType.Watching && previousDomChangeType != PageType.Watching){
       previousDomChangeType = PageType.Watching
       if (lastViewedTitleHref){
-        getRatings(lastViewedTitleHref, true);
+        onNetflixWatchPage(lastViewedTitleHref);
       }
     }
   }
 
   if (currSite === StreamingSite.DisneyPlus) {
-    // We can't to disney plus ratings on hover on the main page
+    // We can't do disney plus ratings on hover on the main page
     // this is because we don't have access to the link of the show/movie at any point, anywhere on the homepage.
     // the most we can get is the title of the show in the current language, but that could cause issues.
     if (getPageType() === PageType.Homepage && previousDomChangeType != PageType.Homepage){
@@ -81,7 +81,7 @@ async function onDomChange() {
     if (getPageType() === PageType.Watching && previousDomChangeType != PageType.Watching){
       previousDomChangeType = PageType.Watching
       if (lastViewedTitleHref){
-        getRatings(lastViewedTitleHref, true);
+        onDisneyWatchPage(lastViewedTitleHref);
       }
     }
   }

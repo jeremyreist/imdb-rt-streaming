@@ -5,23 +5,39 @@ export interface Rating {
   imdb_color: string;
 }
 
-export async function getRatings(titleHref: string, hasClicked: boolean): Promise<Rating> {
-  if (!hasClicked) {
-    const localRating = await checkLocalStorage(titleHref);
+export interface ApiParams {
+  id: string;
+  episode?: string;
+  api?: string;
+  click?: boolean;
+  start?: number;
+  end?: number;
+}
+
+export async function getRatings(params: ApiParams): Promise<Rating> {
+  const {id, episode, api = "8mds8d7d55", click, start, end} = {...params}
+
+  if (!click) {
+    const localRating = await checkLocalStorage(id);
     if (localRating){
       return localRating
     }
-
-    const request = await fetch(`https://filmtoro.com/api/watch.asp?id=${titleHref}&api=8mds8d7d55`);
-    const response = formatApiData(await request.json())
-    await addToLocalStorage(titleHref, response);
-    return response
-  } else {
-    const request = await fetch(`https://filmtoro.com/api/watch.asp?id=${titleHref}&api=8mds8d7d55&click=true`);
-    const response = formatApiData(await request.json())
-    await addToLocalStorage(titleHref, response);
-    return response
   }
+  
+  const apiUrl = new URL(`https://filmtoro.com/api/watch.asp`);
+  apiUrl.searchParams.append('id', id);
+  apiUrl.searchParams.append('api', api);
+
+  if (typeof click !== 'undefined') apiUrl.searchParams.append('click', click.toString());
+  if (typeof episode !== 'undefined') apiUrl.searchParams.append('episode', episode);
+  if (typeof start !== 'undefined') apiUrl.searchParams.append('start', start.toString());
+  if (typeof end !== 'undefined') apiUrl.searchParams.append('end', end.toString());
+
+  const request = await fetch(apiUrl);
+  const response = formatApiData(await request.json())
+  await addToLocalStorage(id, response);
+  return response
+  
 }
 
 async function checkLocalStorage(titleHref: string): Promise<Rating | null> {
