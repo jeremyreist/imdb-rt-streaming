@@ -1,6 +1,6 @@
 {
   "name": "IMDb & Rotten Tomatoes for Streaming",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "Adds the IMDb and Rotten Tomatoes rating to every available title on Netflix & Disney+",
   "permissions": ["storage"],
   "content_scripts":[

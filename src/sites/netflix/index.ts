@@ -34,7 +34,11 @@ export async function onNetflixWatchPage(titleHref: string){
   // While we are still watching the show, update the end time.
   while (window.location.href.indexOf(`watch/${episodeID}`) > 0){
     try {
-      endTime = document.getElementsByTagName('video')[0].currentTime;
+      if (window.location.href.indexOf(`watch/${episodeID}`) > 0){
+        if (!isNaN(document.getElementsByTagName('video')[0].currentTime)){
+          endTime = document.getElementsByTagName('video')[0].currentTime;
+        }
+      }
     } catch {
       break;
     }

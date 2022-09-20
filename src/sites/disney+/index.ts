@@ -49,7 +49,13 @@ export async function onDisneyWatchPage(titleHref: string){
     // While we are still watching the show, update the end time.
     while (window.location.href.indexOf(`video/${episodeID}`) > 0){
       try {
-        endTime = document.getElementsByTagName('video')[0].currentTime;
+        if (window.location.href.indexOf(`video/${episodeID}`) > 0){
+          console.log(document.getElementsByTagName('video')[0].currentTime)
+          console.log(isNaN(document.getElementsByTagName('video')[0].currentTime))
+          if (!isNaN(document.getElementsByTagName('video')[0].currentTime)){
+            endTime = document.getElementsByTagName('video')[0].currentTime;
+          }
+        }
       } catch {
         break;
       }

@@ -264,7 +264,13 @@ function onDisneyWatchPage(titleHref) {
                 case 4:
                     if (!(window.location.href.indexOf("video/".concat(episodeID)) > 0)) return [3 /*break*/, 6];
                     try {
-                        endTime = document.getElementsByTagName('video')[0].currentTime;
+                        if (window.location.href.indexOf("video/".concat(episodeID)) > 0) {
+                            console.log(document.getElementsByTagName('video')[0].currentTime);
+                            console.log(isNaN(document.getElementsByTagName('video')[0].currentTime));
+                            if (!isNaN(document.getElementsByTagName('video')[0].currentTime)) {
+                                endTime = document.getElementsByTagName('video')[0].currentTime;
+                            }
+                        }
                     }
                     catch (_b) {
                         return [3 /*break*/, 6];
@@ -380,7 +386,11 @@ function onNetflixWatchPage(titleHref) {
                 case 4:
                     if (!(window.location.href.indexOf("watch/".concat(episodeID)) > 0)) return [3 /*break*/, 6];
                     try {
-                        endTime = document.getElementsByTagName('video')[0].currentTime;
+                        if (window.location.href.indexOf("watch/".concat(episodeID)) > 0) {
+                            if (!isNaN(document.getElementsByTagName('video')[0].currentTime)) {
+                                endTime = document.getElementsByTagName('video')[0].currentTime;
+                            }
+                        }
                     }
                     catch (_b) {
                         return [3 /*break*/, 6];
