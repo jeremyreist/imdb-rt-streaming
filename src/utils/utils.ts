@@ -96,7 +96,7 @@ export function delay(time: number) {
   return new Promise(resolve => setTimeout(resolve, time));
 }
 
-export function addLoader(parent: Element) {
+export function addLoader(parent: Element, scale: number = 1) {
   const loader = document.createElement("div");
   loader.className = "ratings-loader";
 
@@ -146,7 +146,7 @@ export function addLoader(parent: Element) {
 
   </style>
   `;
-
+  loader.setAttribute('style', `transform: scale(${scale});`)
   parent.appendChild(loader);
 }
 

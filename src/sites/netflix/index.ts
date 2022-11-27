@@ -1,9 +1,8 @@
 import { addLoader, delay, getRatings, removeLoader } from "../../utils/utils"
-declare var netflix: any
 
 var lastViewedTitleHref = null;
 export async function onNetflixHomepage(){
-  const titleHref = getTitleHref()
+  const titleHref = getNetflixTitleHref()
   if (lastViewedTitleHref != titleHref) {
     lastViewedTitleHref = titleHref;
     if (titleHref){
@@ -56,7 +55,7 @@ async function handleTitleCardHover() {
   const parent = document.getElementsByClassName("previewModal--metadatAndControls-container")[0]
   addLoader(parent);
 
-  const titleHref = getTitleHref();
+  const titleHref = getNetflixTitleHref();
   const ratings = await getRatings({id: titleHref});
 
   const ratingsElement = document.createElement("span");
@@ -93,7 +92,7 @@ function insertBeforeProgressBar(element: Element, parent: Element){
 }
 
 
-export function getTitleHref(): string | null {
+export function getNetflixTitleHref(): string | null {
   var previewModal = document.getElementsByClassName("previewModal--info")[0];
   try {
     const titleHref = (previewModal.children[0] as HTMLLinkElement).href;

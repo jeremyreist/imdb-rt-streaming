@@ -50,8 +50,6 @@ export async function onDisneyWatchPage(titleHref: string){
     while (window.location.href.indexOf(`video/${episodeID}`) > 0){
       try {
         if (window.location.href.indexOf(`video/${episodeID}`) > 0){
-          console.log(document.getElementsByTagName('video')[0].currentTime)
-          console.log(isNaN(document.getElementsByTagName('video')[0].currentTime))
           if (!isNaN(document.getElementsByTagName('video')[0].currentTime)){
             endTime = document.getElementsByTagName('video')[0].currentTime;
           }

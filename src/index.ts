@@ -1,10 +1,12 @@
 import { onDisneyDetailsScreen, onDisneyWatchPage } from "./sites/disney+";
-import { getTitleHref, onNetflixHomepage, onNetflixWatchPage } from "./sites/netflix";
+import { getNetflixTitleHref, onNetflixHomepage, onNetflixWatchPage } from "./sites/netflix";
+import { getHBOTitleHref, onHBOHomepage, onHBOWatchPage } from "./sites/hbo";
 import { getRatings } from "./utils/utils";
 
 enum StreamingSite {
   Netflix,
   DisneyPlus,
+  HBOMax,
   None,
 }
 
@@ -24,17 +26,25 @@ window.addEventListener("load", onLoad);
 
 function onLoad(event: Event) {
   // Determine what streaming site we are on
-  if (window.location.href.indexOf("https://www.netflix.com/") > -1) {
+  if (window.location.href.indexOf("netflix.com/") > -1) {
     currSite = StreamingSite.Netflix;
 
     window.addEventListener("mousedown", function () {
-      if (getTitleHref()){
-        lastViewedTitleHref = getTitleHref();
+      if (getNetflixTitleHref()){
+        lastViewedTitleHref = getNetflixTitleHref();
       }
     });
 
-  } else if (window.location.href.indexOf("https://www.disneyplus.com/") > -1) {
+  } else if (window.location.href.indexOf("disneyplus.com/") > -1) {
     currSite = StreamingSite.DisneyPlus;
+
+  } else if (window.location.href.indexOf("hbomax.com/") > -1) {
+    currSite = StreamingSite.HBOMax;
+    window.addEventListener("mousedown", function () {
+      if (getHBOTitleHref()){
+        lastViewedTitleHref = getHBOTitleHref();
+      }
+    });
   }
 
   // Start observing the DOM for mutations
@@ -62,6 +72,8 @@ async function onDomChange() {
     }
   }
 
+  // ------------------
+
   if (currSite === StreamingSite.DisneyPlus) {
     // We can't do disney plus ratings on hover on the main page
     // this is because we don't have access to the link of the show/movie at any point, anywhere on the homepage.
@@ -83,6 +95,20 @@ async function onDomChange() {
       if (lastViewedTitleHref){
         onDisneyWatchPage(lastViewedTitleHref);
       }
+    }
+  }
+
+  // ------------------
+
+  if (currSite === StreamingSite.HBOMax) {
+    if (getPageType() === PageType.Homepage){
+      previousDomChangeType = PageType.Homepage;
+      onHBOHomepage();
+    }
+
+    if (getPageType() === PageType.Watching && previousDomChangeType != PageType.Watching){
+      previousDomChangeType = PageType.Watching;
+      onHBOWatchPage(window.location.href); 
     }
   }
 }
@@ -107,6 +133,21 @@ function getPageType(): PageType{
       currPage = PageType.Details 
     } else if (window.location.href.indexOf("video") > -1){
       currPage = PageType.Watching
+    } else {
+      currPage = PageType.None
+    }
+  }
+
+  if (currSite === StreamingSite.HBOMax){
+    if (window.location.href.indexOf("player") > -1){
+      currPage = PageType.Watching
+    } else if ( window.location.href.indexOf(":type:series") > -1
+        ||  window.location.href.indexOf(":type:feature") > -1){
+      currPage = PageType.Details
+    } else if (  window.location.href.indexOf("/page/urn:hbo:page:") > -1
+        ||       window.location.href.indexOf(":collection:") > -1
+        ||       window.location.href.indexOf(":franchise:") > -1 ){
+      currPage = PageType.Homepage
     } else {
       currPage = PageType.None
     }

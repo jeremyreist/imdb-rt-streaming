@@ -45,11 +45,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 var disney_1 = __webpack_require__(831);
 var netflix_1 = __webpack_require__(309);
+var hbo_1 = __webpack_require__(891);
 var StreamingSite;
 (function (StreamingSite) {
     StreamingSite[StreamingSite["Netflix"] = 0] = "Netflix";
     StreamingSite[StreamingSite["DisneyPlus"] = 1] = "DisneyPlus";
-    StreamingSite[StreamingSite["None"] = 2] = "None";
+    StreamingSite[StreamingSite["HBOMax"] = 2] = "HBOMax";
+    StreamingSite[StreamingSite["None"] = 3] = "None";
 })(StreamingSite || (StreamingSite = {}));
 var PageType;
 (function (PageType) {
@@ -65,16 +67,24 @@ var lastViewedTitleHref = null;
 window.addEventListener("load", onLoad);
 function onLoad(event) {
     // Determine what streaming site we are on
-    if (window.location.href.indexOf("https://www.netflix.com/") > -1) {
+    if (window.location.href.indexOf("netflix.com/") > -1) {
         currSite = StreamingSite.Netflix;
         window.addEventListener("mousedown", function () {
-            if ((0, netflix_1.getTitleHref)()) {
-                lastViewedTitleHref = (0, netflix_1.getTitleHref)();
+            if ((0, netflix_1.getNetflixTitleHref)()) {
+                lastViewedTitleHref = (0, netflix_1.getNetflixTitleHref)();
             }
         });
     }
-    else if (window.location.href.indexOf("https://www.disneyplus.com/") > -1) {
+    else if (window.location.href.indexOf("disneyplus.com/") > -1) {
         currSite = StreamingSite.DisneyPlus;
+    }
+    else if (window.location.href.indexOf("hbomax.com/") > -1) {
+        currSite = StreamingSite.HBOMax;
+        window.addEventListener("mousedown", function () {
+            if ((0, hbo_1.getHBOTitleHref)()) {
+                lastViewedTitleHref = (0, hbo_1.getHBOTitleHref)();
+            }
+        });
     }
     // Start observing the DOM for mutations
     var targetNode = document.getRootNode();
@@ -99,6 +109,7 @@ function onDomChange() {
                     }
                 }
             }
+            // ------------------
             if (currSite === StreamingSite.DisneyPlus) {
                 // We can't do disney plus ratings on hover on the main page
                 // this is because we don't have access to the link of the show/movie at any point, anywhere on the homepage.
@@ -118,6 +129,17 @@ function onDomChange() {
                     if (lastViewedTitleHref) {
                         (0, disney_1.onDisneyWatchPage)(lastViewedTitleHref);
                     }
+                }
+            }
+            // ------------------
+            if (currSite === StreamingSite.HBOMax) {
+                if (getPageType() === PageType.Homepage) {
+                    previousDomChangeType = PageType.Homepage;
+                    (0, hbo_1.onHBOHomepage)();
+                }
+                if (getPageType() === PageType.Watching && previousDomChangeType != PageType.Watching) {
+                    previousDomChangeType = PageType.Watching;
+                    (0, hbo_1.onHBOWatchPage)(window.location.href);
                 }
             }
             return [2 /*return*/];
@@ -146,6 +168,23 @@ function getPageType() {
         }
         else if (window.location.href.indexOf("video") > -1) {
             currPage = PageType.Watching;
+        }
+        else {
+            currPage = PageType.None;
+        }
+    }
+    if (currSite === StreamingSite.HBOMax) {
+        if (window.location.href.indexOf("player") > -1) {
+            currPage = PageType.Watching;
+        }
+        else if (window.location.href.indexOf(":type:series") > -1
+            || window.location.href.indexOf(":type:feature") > -1) {
+            currPage = PageType.Details;
+        }
+        else if (window.location.href.indexOf("/page/urn:hbo:page:") > -1
+            || window.location.href.indexOf(":collection:") > -1
+            || window.location.href.indexOf(":franchise:") > -1) {
+            currPage = PageType.Homepage;
         }
         else {
             currPage = PageType.None;
@@ -265,8 +304,6 @@ function onDisneyWatchPage(titleHref) {
                     if (!(window.location.href.indexOf("video/".concat(episodeID)) > 0)) return [3 /*break*/, 6];
                     try {
                         if (window.location.href.indexOf("video/".concat(episodeID)) > 0) {
-                            console.log(document.getElementsByTagName('video')[0].currentTime);
-                            console.log(isNaN(document.getElementsByTagName('video')[0].currentTime));
                             if (!isNaN(document.getElementsByTagName('video')[0].currentTime)) {
                                 endTime = document.getElementsByTagName('video')[0].currentTime;
                             }
@@ -297,6 +334,201 @@ function hmsToSecondsOnly(str) {
     }
     return seconds;
 }
+
+
+/***/ }),
+
+/***/ 891:
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getHBOTitleHref = exports.onHBOWatchPage = exports.onHBOHomepage = void 0;
+var utils_1 = __webpack_require__(974);
+var lastViewedTitleHref = null;
+function onHBOHomepage() {
+    return __awaiter(this, void 0, void 0, function () {
+        var titleHref;
+        return __generator(this, function (_a) {
+            titleHref = getHBOTitleHref();
+            // Makes sure we only load once per element
+            if (lastViewedTitleHref != titleHref) {
+                lastViewedTitleHref = titleHref;
+                if (titleHref) {
+                    handleTitleCardHover();
+                }
+            }
+            return [2 /*return*/];
+        });
+    });
+}
+exports.onHBOHomepage = onHBOHomepage;
+function onHBOWatchPage(titleHref) {
+    return __awaiter(this, void 0, void 0, function () {
+        var spliceIndex, episodeID, limit, endTime, startTime, duration, start, end;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (titleHref.indexOf("?exitPageUrn") > 0) {
+                        titleHref = titleHref.slice(0, titleHref.indexOf("?exitPageUrn"));
+                    }
+                    spliceIndex = window.location.href.indexOf(":episode:") + ":episode:".length;
+                    if (spliceIndex == 8) {
+                        spliceIndex = window.location.href.indexOf(":feature:") + ":feature:".length;
+                    }
+                    episodeID = window.location.href.slice(spliceIndex, spliceIndex + 21);
+                    limit = 0;
+                    (0, utils_1.getRatings)({ id: titleHref, episode: episodeID, click: true });
+                    return [4 /*yield*/, (0, utils_1.delay)(5000)];
+                case 1:
+                    _a.sent();
+                    _a.label = 2;
+                case 2:
+                    if (!(!document.getElementsByTagName('video').length || limit > 50)) return [3 /*break*/, 4];
+                    limit += 1;
+                    return [4 /*yield*/, (0, utils_1.delay)(500)];
+                case 3:
+                    _a.sent();
+                    return [3 /*break*/, 2];
+                case 4:
+                    startTime = document.getElementsByTagName('video')[0].currentTime;
+                    duration = document.getElementsByTagName('video')[0].duration;
+                    _a.label = 5;
+                case 5:
+                    if (!(window.location.href.indexOf(episodeID) > 0)) return [3 /*break*/, 7];
+                    try {
+                        if (window.location.href.indexOf(episodeID) > 0) {
+                            if (!isNaN(document.getElementsByTagName('video')[0].currentTime)) {
+                                endTime = document.getElementsByTagName('video')[0].currentTime;
+                            }
+                        }
+                    }
+                    catch (error) {
+                        console.log(error);
+                        return [3 /*break*/, 7];
+                    }
+                    return [4 /*yield*/, (0, utils_1.delay)(10)];
+                case 6:
+                    _a.sent();
+                    return [3 /*break*/, 5];
+                case 7:
+                    start = Math.floor((startTime / duration) * 100);
+                    end = Math.floor((endTime / duration) * 100);
+                    if (isNaN(start)) {
+                        console.log('Got NAN for start');
+                        start = 0;
+                    }
+                    if (isNaN(end)) {
+                        console.log('Got NAN for end');
+                        end = 0;
+                    }
+                    (0, utils_1.getRatings)({ id: titleHref, episode: episodeID, click: true, start: start, end: end });
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+exports.onHBOWatchPage = onHBOWatchPage;
+function handleTitleCardHover() {
+    return __awaiter(this, void 0, void 0, function () {
+        var hoveredTitleCard, ratings, titleHref, error_1, ratingsElement, inserted, index;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    hoveredTitleCard = Array.from(document.querySelectorAll(":hover")).pop().closest('a');
+                    if (!(hoveredTitleCard.parentElement.querySelectorAll(".ratings-loader,.ratings").length == 0
+                        && hoveredTitleCard.href.includes(':type:'))) return [3 /*break*/, 5];
+                    (0, utils_1.addLoader)(hoveredTitleCard.children[0].children[0], 0.75);
+                    ratings = { rt_rating: 'N/A', imdb_rating: 'N/A', imdb_color: "#FFF", rt_color: "#FFF" };
+                    titleHref = getHBOTitleHref();
+                    _a.label = 1;
+                case 1:
+                    _a.trys.push([1, 3, , 4]);
+                    return [4 /*yield*/, (0, utils_1.getRatings)({ id: titleHref })];
+                case 2:
+                    ratings = _a.sent();
+                    return [3 /*break*/, 4];
+                case 3:
+                    error_1 = _a.sent();
+                    console.log(error_1);
+                    return [3 /*break*/, 4];
+                case 4:
+                    ratingsElement = document.createElement("h2");
+                    ratingsElement.className = "ratings css-1rynq56 r-dnmrzs r-1udh08x r-1udbk01 r-3s2u2q r-1iln25a";
+                    ratingsElement.innerHTML = "IMDb: <span style=\"color:".concat(ratings.imdb_color, "\">").concat(ratings.imdb_rating, "</span> \u00A0 Rotten Tomatoes: <span style=\"color:").concat(ratings.rt_color, "\">").concat(ratings.rt_rating, "</span>");
+                    ratingsElement.setAttribute('style', 'color: rgba(255, 255, 255, 0.7); font-family: StreetLCG2; font-weight: 400; font-style: normal; font-size: 12px; letter-spacing: 0.5px; line-height: 18px;');
+                    (0, utils_1.removeLoader)(hoveredTitleCard.children[0].children[0]);
+                    inserted = false;
+                    for (index = 0; index < hoveredTitleCard.children.length; index++) {
+                        if (hoveredTitleCard.children[index].getAttribute('data-testid') == 'attribution-text'
+                            || hoveredTitleCard.children[index].getAttribute('data-testid') == 'tile-details-container') {
+                            hoveredTitleCard.insertBefore(ratingsElement, hoveredTitleCard.children[index]);
+                            inserted = true;
+                        }
+                    }
+                    if (!inserted) {
+                        hoveredTitleCard.appendChild(ratingsElement);
+                    }
+                    fadeIn(ratingsElement, 0.1);
+                    _a.label = 5;
+                case 5: return [2 /*return*/];
+            }
+        });
+    });
+}
+function fadeIn(item, i) {
+    i += 0.2;
+    item.style.opacity = i;
+    if (i < 1)
+        setTimeout(function () { return fadeIn(item, i); }, 50);
+}
+function getHBOTitleHref() {
+    var hoveredTitleCard = Array.from(document.querySelectorAll(":hover")).pop();
+    try {
+        var titleHref = hoveredTitleCard.closest('a').href;
+        return titleHref.slice(0, titleHref.indexOf(":type:"));
+    }
+    catch (TypeError) {
+        return null;
+    }
+}
+exports.getHBOTitleHref = getHBOTitleHref;
 
 
 /***/ }),
@@ -342,14 +574,14 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getTitleHref = exports.onNetflixWatchPage = exports.onNetflixHomepage = void 0;
+exports.getNetflixTitleHref = exports.onNetflixWatchPage = exports.onNetflixHomepage = void 0;
 var utils_1 = __webpack_require__(974);
 var lastViewedTitleHref = null;
 function onNetflixHomepage() {
     return __awaiter(this, void 0, void 0, function () {
         var titleHref;
         return __generator(this, function (_a) {
-            titleHref = getTitleHref();
+            titleHref = getNetflixTitleHref();
             if (lastViewedTitleHref != titleHref) {
                 lastViewedTitleHref = titleHref;
                 if (titleHref) {
@@ -417,7 +649,7 @@ function handleTitleCardHover() {
                 case 0:
                     parent = document.getElementsByClassName("previewModal--metadatAndControls-container")[0];
                     (0, utils_1.addLoader)(parent);
-                    titleHref = getTitleHref();
+                    titleHref = getNetflixTitleHref();
                     return [4 /*yield*/, (0, utils_1.getRatings)({ id: titleHref })];
                 case 1:
                     ratings = _a.sent();
@@ -440,7 +672,7 @@ function insertBeforeProgressBar(element, parent) {
     else
         parent.appendChild(element);
 }
-function getTitleHref() {
+function getNetflixTitleHref() {
     var previewModal = document.getElementsByClassName("previewModal--info")[0];
     try {
         var titleHref = previewModal.children[0].href;
@@ -450,7 +682,7 @@ function getTitleHref() {
         return null;
     }
 }
-exports.getTitleHref = getTitleHref;
+exports.getNetflixTitleHref = getNetflixTitleHref;
 
 
 /***/ }),
@@ -633,10 +865,12 @@ function delay(time) {
     return new Promise(function (resolve) { return setTimeout(resolve, time); });
 }
 exports.delay = delay;
-function addLoader(parent) {
+function addLoader(parent, scale) {
+    if (scale === void 0) { scale = 1; }
     var loader = document.createElement("div");
     loader.className = "ratings-loader";
     loader.innerHTML = "\n\n  <div class=\"loadingio-spinner-rolling-mhlz99gyu8k\"><div class=\"ldio-ma7aqaeb3ij\">\n  <div></div>\n  </div></div>\n  <style type=\"text/css\">\n  @keyframes ldio-ma7aqaeb3ij {\n    0% { transform: translate(-50%,-50%) rotate(0deg); }\n    100% { transform: translate(-50%,-50%) rotate(360deg); }\n  }\n  .ldio-ma7aqaeb3ij div {\n    position: absolute;\n    width: 120px;\n    height: 120px;\n    border: 10px solid #ffffff;\n    border-top-color: transparent;\n    border-radius: 50%;\n  }\n  .ldio-ma7aqaeb3ij div {\n    animation: ldio-ma7aqaeb3ij 1s linear infinite;\n    top: 100px;\n    left: 100px\n  }\n  .loadingio-spinner-rolling-mhlz99gyu8k {\n    width: 50px;\n    height: 50px;\n    display: inline-block;\n    overflow: hidden;\n  }\n  .ldio-ma7aqaeb3ij {\n    width: 100%;\n    height: 100%;\n    position: relative;\n    transform: translateZ(0) scale(0.25);\n    backface-visibility: hidden;\n    transform-origin: 0 0px; /* see note above */\n  }\n  .ldio-ma7aqaeb3ij div { box-sizing: content-box; }\n\n  .ratings-loader {\n    display: flex;\n    justify-content: center;\n  }\n\n  </style>\n  ";
+    loader.setAttribute('style', "transform: scale(".concat(scale, ");"));
     parent.appendChild(loader);
 }
 exports.addLoader = addLoader;

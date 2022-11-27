@@ -1,14 +1,12 @@
-Adds IMDb and Rotten Tomatoes ratings to Netflix titles.
+Adds IMDb and Rotten Tomatoes ratings to Netflix, Disney+ and HBO Max titles.
 
-Simply enable the extension and hover over any title to see the ratings.
-Very easy on CPU and memory, this lightweight extension adds IMDb and Rotten Tomatoes ratings to every title available.
+Simply enable the extension and hover over any title on Netflix or HBO Max, or click on any title on Disney+ to see the ratings.
+Very efficient on CPU and memory, this lightweight extension adds IMDb and Rotten Tomatoes ratings to every title available.
 
 Features:
-    -    Displays IMDb and Rotten Tomatoes ratings on every title card.
-    -    Settings panel to enable or disable all features of extension.
-    -    Color options can be toggled.
+    -    Displays IMDb and Rotten Tomatoes ratings on every title card on Netflix.
+    -    Displays IMDb and Rotten Tomatoes ratings on every title card on HBO Max.
+    -    Displays IMDb and Rotten Tomatoes ratings on every details page on Disney Plus.
+    -    Support for Prime Video, Hulu and more coming soon.
 
 Please rate this extension if you find it helpful.
-
-Sold to: filmtoro.com on July 1, 2022
-Creator / Developer: Jeremy Reist
