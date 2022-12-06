@@ -1,6 +1,6 @@
 import { onDisneyDetailsScreen, onDisneyWatchPage } from "./sites/disney+";
 import { getNetflixTitleHref, onNetflixHomepage, onNetflixWatchPage } from "./sites/netflix";
-import { getHBOTitleHref, onHBOHomepage, onHBOWatchPage } from "./sites/hbo";
+import { getHBOTitleHref, onHBOHomepage, onHBOWatchPage, onHBODetailsScreen} from "./sites/hbo";
 import { getRatings } from "./utils/utils";
 
 enum StreamingSite {
@@ -106,10 +106,17 @@ async function onDomChange() {
       onHBOHomepage();
     }
 
-    if (getPageType() === PageType.Watching && previousDomChangeType != PageType.Watching){
-      previousDomChangeType = PageType.Watching;
-      onHBOWatchPage(window.location.href); 
+    if (getPageType() === PageType.Details && lastViewedTitleHref != window.location.href){
+      previousDomChangeType = PageType.Details
+      lastViewedTitleHref = window.location.href;
+      onHBODetailsScreen();
     }
+
+    if (getPageType() === PageType.Watching && previousDomChangeType != PageType.Watching){
+      previousDomChangeType = PageType.Watching;``
+      onHBOWatchPage(lastViewedTitleHref); 
+    }
+    
   }
 }
 

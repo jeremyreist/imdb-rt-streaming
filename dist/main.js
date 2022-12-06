@@ -137,9 +137,15 @@ function onDomChange() {
                     previousDomChangeType = PageType.Homepage;
                     (0, hbo_1.onHBOHomepage)();
                 }
+                if (getPageType() === PageType.Details && lastViewedTitleHref != window.location.href) {
+                    previousDomChangeType = PageType.Details;
+                    lastViewedTitleHref = window.location.href;
+                    (0, hbo_1.onHBODetailsScreen)();
+                }
                 if (getPageType() === PageType.Watching && previousDomChangeType != PageType.Watching) {
                     previousDomChangeType = PageType.Watching;
-                    (0, hbo_1.onHBOWatchPage)(window.location.href);
+                    "";
+                    (0, hbo_1.onHBOWatchPage)(lastViewedTitleHref);
                 }
             }
             return [2 /*return*/];
@@ -379,17 +385,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getHBOTitleHref = exports.onHBOWatchPage = exports.onHBOHomepage = void 0;
+exports.getHBOTitleHref = exports.onHBOWatchPage = exports.onHBODetailsScreen = exports.onHBOHomepage = void 0;
 var utils_1 = __webpack_require__(974);
-var lastViewedTitleHref = null;
+var lastHoveredTitleHfref = null;
 function onHBOHomepage() {
     return __awaiter(this, void 0, void 0, function () {
         var titleHref;
         return __generator(this, function (_a) {
             titleHref = getHBOTitleHref();
             // Makes sure we only load once per element
-            if (lastViewedTitleHref != titleHref) {
-                lastViewedTitleHref = titleHref;
+            if (lastHoveredTitleHfref != titleHref) {
+                lastHoveredTitleHfref = titleHref;
                 if (titleHref) {
                     handleTitleCardHover();
                 }
@@ -399,9 +405,56 @@ function onHBOHomepage() {
     });
 }
 exports.onHBOHomepage = onHBOHomepage;
+function onHBODetailsScreen() {
+    return __awaiter(this, void 0, void 0, function () {
+        var titleHref, ratings, ratingsElement, attempts, buttonContainers, index;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    titleHref = window.location.href.slice(0, window.location.href.indexOf(":type:"));
+                    return [4 /*yield*/, (0, utils_1.getRatings)({ id: titleHref })];
+                case 1:
+                    ratings = _a.sent();
+                    ratingsElement = document.createElement("h2");
+                    ratingsElement.className = "ratings css-1rynq56 r-dnmrzs r-1udh08x r-1udbk01 r-3s2u2q r-1iln25a";
+                    ratingsElement.innerHTML = "IMDb: <span style=\"color:".concat(ratings.imdb_color, "\">").concat(ratings.imdb_rating, "</span> \u00A0 Rotten Tomatoes: <span style=\"color:").concat(ratings.rt_color, "\">").concat(ratings.rt_rating, "</span>");
+                    ratingsElement.setAttribute('style', 'color: rgba(255, 255, 255, 0.7); font-family: StreetLCG2; font-weight: 400; font-style: normal; font-size: 14px; letter-spacing: 0.5px; line-height: 18px; padding-left:20px');
+                    attempts = 0;
+                    _a.label = 2;
+                case 2:
+                    if (false) {}
+                    return [4 /*yield*/, (0, utils_1.delay)(1000)];
+                case 3:
+                    _a.sent();
+                    buttonContainers = document.getElementsByClassName('css-175oi2r r-1awozwy r-18u37iz r-1mnahxq');
+                    if (!buttonContainers.length) return [3 /*break*/, 4];
+                    for (index = 0; index < buttonContainers.length; index++) {
+                        if (getComputedStyle(buttonContainers[index]).display == 'flex') {
+                            buttonContainers[index].appendChild(ratingsElement);
+                            fadeIn(ratingsElement, 0.1);
+                        }
+                    }
+                    return [3 /*break*/, 7];
+                case 4:
+                    attempts += 1;
+                    return [4 /*yield*/, (0, utils_1.delay)(100)];
+                case 5:
+                    _a.sent();
+                    _a.label = 6;
+                case 6:
+                    if (attempts === 100) {
+                        console.error("Failed to get ratings!");
+                    }
+                    return [3 /*break*/, 2];
+                case 7: return [2 /*return*/];
+            }
+        });
+    });
+}
+exports.onHBODetailsScreen = onHBODetailsScreen;
 function onHBOWatchPage(titleHref) {
     return __awaiter(this, void 0, void 0, function () {
-        var spliceIndex, episodeID, limit, endTime, startTime, duration, start, end;
+        var spliceIndex, episodeID, exitPageUrn, limit, endTime, startTime, duration, start, end;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -413,7 +466,17 @@ function onHBOWatchPage(titleHref) {
                         spliceIndex = window.location.href.indexOf(":feature:") + ":feature:".length;
                     }
                     episodeID = window.location.href.slice(spliceIndex, spliceIndex + 21);
+                    exitPageUrn = null;
+                    if (window.location.href.indexOf('?exitPageUrn=') > 0 && window.location.href.indexOf('episode') > 0) {
+                        exitPageUrn = window.location.href.slice(window.location.href.indexOf('?exitPageUrn=') + '?exitPageUrn='.length);
+                    }
                     limit = 0;
+                    if (titleHref.indexOf('series') == 0) {
+                        titleHref = "";
+                    }
+                    else if (exitPageUrn) {
+                        titleHref = 'https://play.hbomax.com' + exitPageUrn;
+                    }
                     (0, utils_1.getRatings)({ id: titleHref, episode: episodeID, click: true });
                     return [4 /*yield*/, (0, utils_1.delay)(5000)];
                 case 1:
@@ -473,7 +536,8 @@ function handleTitleCardHover() {
                 case 0:
                     hoveredTitleCard = Array.from(document.querySelectorAll(":hover")).pop().closest('a');
                     if (!(hoveredTitleCard.parentElement.querySelectorAll(".ratings-loader,.ratings").length == 0
-                        && hoveredTitleCard.href.includes(':type:'))) return [3 /*break*/, 5];
+                        && hoveredTitleCard.href.includes(':type:')
+                        && !(hoveredTitleCard.href.includes('episode')))) return [3 /*break*/, 5];
                     (0, utils_1.addLoader)(hoveredTitleCard.children[0].children[0], 0.75);
                     ratings = { rt_rating: 'N/A', imdb_rating: 'N/A', imdb_color: "#FFF", rt_color: "#FFF" };
                     titleHref = getHBOTitleHref();
@@ -494,18 +558,21 @@ function handleTitleCardHover() {
                     ratingsElement.innerHTML = "IMDb: <span style=\"color:".concat(ratings.imdb_color, "\">").concat(ratings.imdb_rating, "</span> \u00A0 Rotten Tomatoes: <span style=\"color:").concat(ratings.rt_color, "\">").concat(ratings.rt_rating, "</span>");
                     ratingsElement.setAttribute('style', 'color: rgba(255, 255, 255, 0.7); font-family: StreetLCG2; font-weight: 400; font-style: normal; font-size: 12px; letter-spacing: 0.5px; line-height: 18px;');
                     (0, utils_1.removeLoader)(hoveredTitleCard.children[0].children[0]);
-                    inserted = false;
-                    for (index = 0; index < hoveredTitleCard.children.length; index++) {
-                        if (hoveredTitleCard.children[index].getAttribute('data-testid') == 'attribution-text'
-                            || hoveredTitleCard.children[index].getAttribute('data-testid') == 'tile-details-container') {
-                            hoveredTitleCard.insertBefore(ratingsElement, hoveredTitleCard.children[index]);
-                            inserted = true;
+                    // Insert ratings element if not a trailer
+                    if (!hoveredTitleCard.href.includes('extra')) {
+                        inserted = false;
+                        for (index = 0; index < hoveredTitleCard.children.length; index++) {
+                            if (hoveredTitleCard.children[index].getAttribute('data-testid') == 'attribution-text'
+                                || hoveredTitleCard.children[index].getAttribute('data-testid') == 'tile-details-container') {
+                                hoveredTitleCard.insertBefore(ratingsElement, hoveredTitleCard.children[index]);
+                                inserted = true;
+                            }
                         }
+                        if (!inserted) {
+                            hoveredTitleCard.appendChild(ratingsElement);
+                        }
+                        fadeIn(ratingsElement, 0.1);
                     }
-                    if (!inserted) {
-                        hoveredTitleCard.appendChild(ratingsElement);
-                    }
-                    fadeIn(ratingsElement, 0.1);
                     _a.label = 5;
                 case 5: return [2 /*return*/];
             }
