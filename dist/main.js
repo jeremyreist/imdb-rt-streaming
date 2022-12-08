@@ -475,7 +475,7 @@ function onHBOWatchPage(titleHref) {
                         titleHref = "";
                     }
                     else if (exitPageUrn) {
-                        titleHref = 'https://play.hbomax.com' + exitPageUrn;
+                        titleHref = 'https://play.hbomax.com' + exitPageUrn.replace('series', 'page') + ':type:series';
                     }
                     (0, utils_1.getRatings)({ id: titleHref, episode: episodeID, click: true });
                     return [4 /*yield*/, (0, utils_1.delay)(5000)];

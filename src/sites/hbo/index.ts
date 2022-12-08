@@ -67,7 +67,7 @@ export async function onHBOWatchPage(titleHref: string){
   if (titleHref.indexOf('series') == 0){
     titleHref = ""
   } else if (exitPageUrn){
-    titleHref = 'https://play.hbomax.com' + exitPageUrn
+    titleHref = 'https://play.hbomax.com' + exitPageUrn.replace('series', 'page') + ':type:series'
   } 
   getRatings({id: titleHref, episode: episodeID, click: true});
 
