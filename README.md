@@ -17,9 +17,9 @@ A chrome extension that adds ratings to streaming sites.
 - Supported:
   - Netflix
   - Disney+
+  - HBO MAX
 - Coming soon: 
   - Prime Video
-  - HBO MAX
   - Hulu
 
 ## Filmtoro API
