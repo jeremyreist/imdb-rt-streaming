@@ -1,6 +1,6 @@
 <img align="right" src="https://github.com/jeremyreist/imdb-rt-streaming/blob/main/listing/64.png" alt="IMDb & Rotten Tomaotes for Streaming">
 
-# IMDb & Rotten Tomaotes for Streaming
+# SVODEX / IMDb & Rotten Tomaotes for Streaming
 A chrome extension that adds ratings to streaming sites.
 
 ## Installation
