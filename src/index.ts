@@ -1,5 +1,5 @@
 import { onDisneyDetailsScreen, onDisneyWatchPage } from "./sites/disney+";
-import { getNetflixTitleHref, onNetflixHomepage, onNetflixWatchPage } from "./sites/netflix";
+import { getNetflixTitleHref, onNetflixHomepage, onNetflixDetailsPage, onNetflixWatchPage } from "./sites/netflix";
 import { getHBOTitleHref, onHBOHomepage, onHBOWatchPage, onHBODetailsScreen} from "./sites/hbo";
 import { getRatings } from "./utils/utils";
 
@@ -21,6 +21,7 @@ enum PageType {
 chrome.storage.local.clear();
 
 var currSite = StreamingSite.None;
+var oldHref = document.location.href;
 var lastViewedTitleHref = null;
 window.addEventListener("load", onLoad);
 
@@ -63,11 +64,17 @@ async function onDomChange() {
       onNetflixHomepage();
       previousDomChangeType = PageType.Homepage
     }
-
-    if (getPageType() === PageType.Watching && previousDomChangeType != PageType.Watching){
-      previousDomChangeType = PageType.Watching
-      if (lastViewedTitleHref){
-        onNetflixWatchPage(lastViewedTitleHref);
+    if (oldHref != document.location.href) {
+      oldHref = document.location.href;
+      if(getPageType() === PageType.Details) {
+        onNetflixDetailsPage();
+        previousDomChangeType = PageType.Details
+      }
+      if (getPageType() === PageType.Watching && previousDomChangeType != PageType.Watching){
+        previousDomChangeType = PageType.Watching
+        if (lastViewedTitleHref){
+          onNetflixWatchPage(lastViewedTitleHref);
+        }
       }
     }
   }

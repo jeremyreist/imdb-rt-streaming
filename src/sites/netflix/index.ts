@@ -10,6 +10,11 @@ export async function onNetflixHomepage(){
     }
   }
 }
+
+export async function onNetflixDetailsPage() {
+  if (lastViewedTitleHref)
+    handleShowInformationCard(lastViewedTitleHref);
+}
  
 export async function onNetflixWatchPage(titleHref: string){
   const spliceIndex = window.location.href.indexOf("watch/") + "watch/".length;
@@ -49,6 +54,36 @@ export async function onNetflixWatchPage(titleHref: string){
 
   getRatings({id: titleHref, episode: episodeID, click: true, start: start, end: end});
 
+}
+
+async function handleShowInformationCard(titleHref: string){
+  const parent = document.getElementsByClassName("detail-modal-container")[0]; // Info box.
+  addLoader(parent);
+  const ratings = await getRatings({id: titleHref, click: true});
+  
+  const ratingsElement = document.createElement("span");
+  ratingsElement.className = "previewModal--metadatAndControls-tags-container";
+  ratingsElement.innerHTML = 
+  `
+  <div class="evidence-tags">
+    <div class="evidence-list">
+      <div class="evidence-item">
+        <span class="evidence-text" style="font-size:20px">
+          IMDb: <span style="color:${ratings.imdb_color}">${ratings.imdb_rating}</span> 
+        </span>
+      </div>
+      <div class="evidence-item">
+        <span class="evidence-separator"></span>
+        <span class="evidence-text" style="font-size:20px">
+          Rotten Tomatoes: <span style="color:${ratings.rt_color}">${ratings.rt_rating}</span> 
+        </span>
+      </div>
+    </div>
+  </div>
+  `;
+  
+  removeLoader(parent);
+  parent.insertBefore(ratingsElement, parent.children[0]);
 }
 
 async function handleTitleCardHover() {

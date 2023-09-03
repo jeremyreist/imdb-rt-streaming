@@ -63,6 +63,7 @@ var PageType;
 // clear stored ratings 
 chrome.storage.local.clear();
 var currSite = StreamingSite.None;
+var oldHref = document.location.href;
 var lastViewedTitleHref = null;
 window.addEventListener("load", onLoad);
 function onLoad(event) {
@@ -99,13 +100,21 @@ function onDomChange() {
         return __generator(this, function (_a) {
             if (currSite === StreamingSite.Netflix) {
                 if (getPageType() === PageType.Homepage) {
+                    console.log("homepage");
                     (0, netflix_1.onNetflixHomepage)();
                     previousDomChangeType = PageType.Homepage;
                 }
-                if (getPageType() === PageType.Watching && previousDomChangeType != PageType.Watching) {
-                    previousDomChangeType = PageType.Watching;
-                    if (lastViewedTitleHref) {
-                        (0, netflix_1.onNetflixWatchPage)(lastViewedTitleHref);
+                if (oldHref != document.location.href) {
+                    oldHref = document.location.href;
+                    if (getPageType() === PageType.Details) {
+                        (0, netflix_1.onNetflixDetailsPage)();
+                        previousDomChangeType = PageType.Details;
+                    }
+                    if (getPageType() === PageType.Watching && previousDomChangeType != PageType.Watching) {
+                        previousDomChangeType = PageType.Watching;
+                        if (lastViewedTitleHref) {
+                            (0, netflix_1.onNetflixWatchPage)(lastViewedTitleHref);
+                        }
                     }
                 }
             }
@@ -641,7 +650,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getNetflixTitleHref = exports.onNetflixWatchPage = exports.onNetflixHomepage = void 0;
+exports.getNetflixTitleHref = exports.onNetflixWatchPage = exports.onNetflixDetailsPage = exports.onNetflixHomepage = void 0;
 var utils_1 = __webpack_require__(974);
 var lastViewedTitleHref = null;
 function onNetflixHomepage() {
@@ -660,6 +669,16 @@ function onNetflixHomepage() {
     });
 }
 exports.onNetflixHomepage = onNetflixHomepage;
+function onNetflixDetailsPage() {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            if (lastViewedTitleHref)
+                handleShowInformationCard(lastViewedTitleHref);
+            return [2 /*return*/];
+        });
+    });
+}
+exports.onNetflixDetailsPage = onNetflixDetailsPage;
 function onNetflixWatchPage(titleHref) {
     return __awaiter(this, void 0, void 0, function () {
         var spliceIndex, episodeID, limit, endTime, startTime, duration, start, end;
@@ -708,6 +727,28 @@ function onNetflixWatchPage(titleHref) {
     });
 }
 exports.onNetflixWatchPage = onNetflixWatchPage;
+function handleShowInformationCard(titleHref) {
+    return __awaiter(this, void 0, void 0, function () {
+        var parent, ratings, ratingsElement;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    parent = document.getElementsByClassName("detail-modal-container")[0];
+                    (0, utils_1.addLoader)(parent);
+                    return [4 /*yield*/, (0, utils_1.getRatings)({ id: titleHref, click: true })];
+                case 1:
+                    ratings = _a.sent();
+                    ratingsElement = document.createElement("span");
+                    ratingsElement.className = "previewModal--metadatAndControls-tags-container";
+                    ratingsElement.innerHTML =
+                        "\n  <div class=\"evidence-tags\">\n    <div class=\"evidence-list\">\n      <div class=\"evidence-item\">\n        <span class=\"evidence-text\" style=\"font-size:20px\">\n          IMDb: <span style=\"color:".concat(ratings.imdb_color, "\">").concat(ratings.imdb_rating, "</span> \n        </span>\n      </div>\n      <div class=\"evidence-item\">\n        <span class=\"evidence-separator\"></span>\n        <span class=\"evidence-text\" style=\"font-size:20px\">\n          Rotten Tomatoes: <span style=\"color:").concat(ratings.rt_color, "\">").concat(ratings.rt_rating, "</span> \n        </span>\n      </div>\n    </div>\n  </div>\n  ");
+                    (0, utils_1.removeLoader)(parent);
+                    parent.insertBefore(ratingsElement, parent.children[0]);
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
 function handleTitleCardHover() {
     return __awaiter(this, void 0, void 0, function () {
         var parent, titleHref, ratings, ratingsElement;
