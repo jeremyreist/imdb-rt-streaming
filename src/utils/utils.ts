@@ -96,7 +96,7 @@ export function delay(time: number) {
   return new Promise(resolve => setTimeout(resolve, time));
 }
 
-export function addLoader(parent: Element, scale: number = 1) {
+export function addLoader(parent: Element, scale: number = 1, insertBefore: boolean = false) {
   const loader = document.createElement("div");
   loader.className = "ratings-loader";
 
@@ -147,7 +147,11 @@ export function addLoader(parent: Element, scale: number = 1) {
   </style>
   `;
   loader.setAttribute('style', `transform: scale(${scale});`)
+  if(insertBefore){
+    parent.insertBefore(loader, parent.children[0]);
+  } else {
   parent.appendChild(loader);
+  }
 }
 
 export function removeLoader(parent: Element){

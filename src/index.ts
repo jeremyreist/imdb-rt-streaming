@@ -35,7 +35,9 @@ function onLoad(event: Event) {
         lastViewedTitleHref = getNetflixTitleHref();
       }
     });
-
+    if(window.location.href.indexOf("title") > -1){
+      onNetflixDetailsPage();
+    }
   } else if (window.location.href.indexOf("disneyplus.com/") > -1) {
     currSite = StreamingSite.DisneyPlus;
 
