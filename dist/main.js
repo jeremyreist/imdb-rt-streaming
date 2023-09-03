@@ -984,23 +984,34 @@ function formatApiData(apiData) {
     var output = { rt_rating: 'N/A', imdb_rating: 'N/A', imdb_color: "#FFF", rt_color: "#FFF" };
     if (apiData['film_imdb_rating'] > 0) {
         output.imdb_rating = "".concat((apiData['film_imdb_rating'] / 10).toFixed(1));
-        if (apiData['film_imdb_rating'] > 83) {
-            output.imdb_color = '#2ECC71';
-        }
-        else if (apiData['film_imdb_rating'] < 70) {
-            output.imdb_color = '#C70039';
-        }
+        output.imdb_color = getHexColor(apiData['film_imdb_rating']);
     }
     if (apiData['film_rt_rating'] > 0) {
         output.rt_rating = "".concat(apiData['film_rt_rating'], "%");
-        if (apiData['film_rt_rating'] > 83) {
-            output.rt_color = '#2ECC71';
-        }
-        else if (apiData['film_rt_rating'] < 70) {
-            output.rt_color = '#C70039';
-        }
+        output.rt_color = getHexColor(apiData['film_rt_rating']);
     }
     return output;
+}
+function getHexColor(rating) {
+    console.log("rating" + rating);
+    // Define the endpoint colors
+    var startColor = [199, 0, 57]; // Dark Red (RGB)
+    var endColor = [46, 204, 113]; // Dark Green (RGB)
+    // Calculate the interpolated color
+    var lerpedColor = startColor.map(function (startValue, index) {
+        var endValue = endColor[index];
+        return Math.round(startValue + (endValue - startValue) * (rating / 100));
+    });
+    // Convert RGB color to hex
+    var hexColor = rgbToHex(lerpedColor);
+    return hexColor;
+}
+// Helper function to convert RGB color to hex color
+function rgbToHex(rgb) {
+    return "#".concat(rgb.map(function (val) {
+        var hex = val.toString(16);
+        return hex.length === 1 ? "0".concat(hex) : hex;
+    }).join(''));
 }
 function delay(time) {
     return new Promise(function (resolve) { return setTimeout(resolve, time); });
