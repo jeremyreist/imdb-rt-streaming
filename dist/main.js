@@ -993,7 +993,6 @@ function formatApiData(apiData) {
     return output;
 }
 function getHexColor(rating) {
-    console.log("rating" + rating);
     // Define the endpoint colors
     var startColor = [199, 0, 57]; // Dark Red (RGB)
     var endColor = [46, 204, 113]; // Dark Green (RGB)
@@ -1003,8 +1002,7 @@ function getHexColor(rating) {
         return Math.round(startValue + (endValue - startValue) * (rating / 100));
     });
     // Convert RGB color to hex
-    var hexColor = rgbToHex(lerpedColor);
-    return hexColor;
+    return rgbToHex(lerpedColor);
 }
 // Helper function to convert RGB color to hex color
 function rgbToHex(rgb) {
