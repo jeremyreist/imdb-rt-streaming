@@ -1,25 +1,36 @@
-import { addLoader, delay, getRatings, removeLoader } from "../../utils/utils"
+import { Rating, addLoader, delay, getRatings, removeLoader } from "../../utils/utils"
 
+var lastGrabbedRatingsFromTitleCard = null;
 var lastViewedTitleHref = null;
-export async function onNetflixHomepage(){
+export async function onNetflixHomepage() {
   const titleHref = getNetflixTitleHref()
   if (lastViewedTitleHref != titleHref) {
     lastViewedTitleHref = titleHref;
-    if (titleHref){
-      handleTitleCardHover()
+    if (titleHref) {
+      handleTitleCardHover(lastViewedTitleHref)
     }
   }
 }
- 
-export async function onNetflixWatchPage(titleHref: string){
+
+export async function onNetflixDetailsPage() {
+  if (lastViewedTitleHref)
+    handleShowInformationCard(lastViewedTitleHref);
+  else {
+    lastViewedTitleHref = getAlternateTitleHref();
+    if(lastViewedTitleHref)
+      handleShowInformationCard(lastViewedTitleHref);
+  }
+}
+
+export async function onNetflixWatchPage(titleHref: string) {
   const spliceIndex = window.location.href.indexOf("watch/") + "watch/".length;
   const episodeID = window.location.href.slice(spliceIndex, spliceIndex + 8);
   var limit = 0;
 
-  getRatings({id: titleHref, episode: episodeID, click: true});
+  getRatings({ id: titleHref, episode: episodeID, click: true });
 
   // Waits for the video to load.
-  while (!document.getElementsByTagName('video').length || limit > 50){
+  while (!document.getElementsByTagName('video').length || limit > 50) {
     limit += 1;
     await delay(500);
   }
@@ -31,10 +42,10 @@ export async function onNetflixWatchPage(titleHref: string){
   duration = document.getElementsByTagName('video')[0].duration;
 
   // While we are still watching the show, update the end time.
-  while (window.location.href.indexOf(`watch/${episodeID}`) > 0){
+  while (window.location.href.indexOf(`watch/${episodeID}`) > 0) {
     try {
-      if (window.location.href.indexOf(`watch/${episodeID}`) > 0){
-        if (!isNaN(document.getElementsByTagName('video')[0].currentTime)){
+      if (window.location.href.indexOf(`watch/${episodeID}`) > 0) {
+        if (!isNaN(document.getElementsByTagName('video')[0].currentTime)) {
           endTime = document.getElementsByTagName('video')[0].currentTime;
         }
       }
@@ -44,24 +55,61 @@ export async function onNetflixWatchPage(titleHref: string){
     await delay(10);
   }
 
-  const start = Math.floor((startTime / duration)*100);
-  const end = Math.floor((endTime / duration)*100);
+  const start = Math.floor((startTime / duration) * 100);
+  const end = Math.floor((endTime / duration) * 100);
 
-  getRatings({id: titleHref, episode: episodeID, click: true, start: start, end: end});
-
+  getRatings({ id: titleHref, episode: episodeID, click: true, start: start, end: end });
 }
 
-async function handleTitleCardHover() {
-  const parent = document.getElementsByClassName("previewModal--metadatAndControls-container")[0]
-  addLoader(parent);
-
-  const titleHref = getNetflixTitleHref();
-  const ratings = await getRatings({id: titleHref});
+async function handleShowInformationCard(titleHref: string) {
+  const parent = document.getElementsByClassName("detail-modal-container")[0]; // Info box.
+  addLoader(parent, /*number=*/1, /*insertBefore=*/true);
+  let ratings: Rating;
+  if (!lastGrabbedRatingsFromTitleCard || lastGrabbedRatingsFromTitleCard.id != titleHref) {
+    ratings = await getRatings({ id: titleHref, click: true });
+    lastGrabbedRatingsFromTitleCard = ratings;
+    lastGrabbedRatingsFromTitleCard.id = titleHref;
+  }
+  else {
+    // Use cached ratings if we have them.
+    ratings = lastGrabbedRatingsFromTitleCard;
+  }
 
   const ratingsElement = document.createElement("span");
   ratingsElement.className = "previewModal--metadatAndControls-tags-container";
-  ratingsElement.innerHTML = 
-  `
+  ratingsElement.innerHTML =
+    `
+  <div class="evidence-tags">
+    <div class="evidence-list">
+      <div class="evidence-item">
+        <span class="evidence-text" style="font-size:20px">
+          IMDb: <span style="color:${ratings.imdb_color}">${ratings.imdb_rating}</span> 
+        </span>
+      </div>
+      <div class="evidence-item">
+        <span class="evidence-separator"></span>
+        <span class="evidence-text" style="font-size:20px">
+          Rotten Tomatoes: <span style="color:${ratings.rt_color}">${ratings.rt_rating}</span> 
+        </span>
+      </div>
+    </div>
+  </div>
+  `;
+  removeLoader(parent);
+  parent.insertBefore(ratingsElement, parent.children[0]);
+}
+
+async function handleTitleCardHover(titleHref: string) {
+  const parent = document.getElementsByClassName("previewModal--metadatAndControls-container")[0]
+  addLoader(parent);
+
+  const ratings = await getRatings({ id: titleHref });
+  lastGrabbedRatingsFromTitleCard = ratings;
+  lastGrabbedRatingsFromTitleCard.id = titleHref;
+  const ratingsElement = document.createElement("span");
+  ratingsElement.className = "previewModal--metadatAndControls-tags-container";
+  ratingsElement.innerHTML =
+    `
   <div class="evidence-tags">
     <div class="evidence-list">
       <div class="evidence-item">
@@ -78,17 +126,17 @@ async function handleTitleCardHover() {
     </div>
   </div>
   `;
-  
+
   removeLoader(parent);
   insertBeforeProgressBar(ratingsElement, parent);
 }
 
-function insertBeforeProgressBar(element: Element, parent: Element){
+function insertBeforeProgressBar(element: Element, parent: Element) {
   const progressBar = parent.getElementsByClassName("previewModal-progress")[0];
-  if (progressBar){
+  if (progressBar) {
     parent.insertBefore(element, progressBar);
   }
- else parent.appendChild(element);
+  else parent.appendChild(element);
 }
 
 
@@ -105,3 +153,15 @@ export function getNetflixTitleHref(): string | null {
   }
 }
 
+export function getAlternateTitleHref(): string | null {
+  if (window.location.href.indexOf("title") == -1) return null;
+  try {
+    const linkElements = document.querySelectorAll("link[rel='alternate']");
+    const link = (linkElements[0] as HTMLLinkElement).href;
+    if (!link) return null;
+    return "https://" + link.slice(
+      link.indexOf("www.netflix"));
+  } catch (TypeError) {
+    return null;
+  }
+}

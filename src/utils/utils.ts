@@ -73,30 +73,32 @@ async function addToLocalStorage(titleHref: string, rating: Rating) {
 
 function formatApiData(apiData: any): Rating {
   let output = {rt_rating: 'N/A', imdb_rating: 'N/A', imdb_color: "#FFF", rt_color: "#FFF"}
-  if (apiData['film_imdb_rating'] > 0){
-    output.imdb_rating = `${(apiData['film_imdb_rating']/10).toFixed(1)}`
+  if (apiData['film_imdb_rating'] > 0) {
+    output.imdb_rating = "".concat((apiData['film_imdb_rating'] / 10).toFixed(1));
     if (apiData['film_imdb_rating'] > 83) {
-      output.imdb_color = '#2ECC71';
-    } else if (apiData['film_imdb_rating'] < 70) {
-      output.imdb_color = '#C70039';
+        output.imdb_color = '#2ECC71';
+    }
+    else if (apiData['film_imdb_rating'] < 70) {
+        output.imdb_color = '#C70039';
     }
   }
-  if (apiData['film_rt_rating'] > 0){
-    output.rt_rating = `${apiData['film_rt_rating']}%`
-    if (apiData['film_rt_rating'] > 83) {
-      output.rt_color = '#2ECC71';
-    } else if (apiData['film_rt_rating'] < 70) {
-      output.rt_color = '#C70039';
-    }
+  if (apiData['film_rt_rating'] > 0) {
+      output.rt_rating = "".concat(apiData['film_rt_rating'], "%");
+      if (apiData['film_rt_rating'] > 83) {
+          output.rt_color = '#2ECC71';
+      }
+      else if (apiData['film_rt_rating'] < 70) {
+          output.rt_color = '#C70039';
+      }
   }
-  return output
+  return output;
 }
 
 export function delay(time: number) {
   return new Promise(resolve => setTimeout(resolve, time));
 }
 
-export function addLoader(parent: Element, scale: number = 1) {
+export function addLoader(parent: Element, scale: number = 1, insertBefore: boolean = false) {
   const loader = document.createElement("div");
   loader.className = "ratings-loader";
 
@@ -147,7 +149,11 @@ export function addLoader(parent: Element, scale: number = 1) {
   </style>
   `;
   loader.setAttribute('style', `transform: scale(${scale});`)
+  if(insertBefore){
+    parent.insertBefore(loader, parent.children[0]);
+  } else {
   parent.appendChild(loader);
+  }
 }
 
 export function removeLoader(parent: Element){

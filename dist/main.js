@@ -63,6 +63,7 @@ var PageType;
 // clear stored ratings 
 chrome.storage.local.clear();
 var currSite = StreamingSite.None;
+var oldHref = document.location.href;
 var lastViewedTitleHref = null;
 window.addEventListener("load", onLoad);
 function onLoad(event) {
@@ -74,6 +75,9 @@ function onLoad(event) {
                 lastViewedTitleHref = (0, netflix_1.getNetflixTitleHref)();
             }
         });
+        if (window.location.href.indexOf("title") > -1) {
+            (0, netflix_1.onNetflixDetailsPage)();
+        }
     }
     else if (window.location.href.indexOf("disneyplus.com/") > -1) {
         currSite = StreamingSite.DisneyPlus;
@@ -102,10 +106,17 @@ function onDomChange() {
                     (0, netflix_1.onNetflixHomepage)();
                     previousDomChangeType = PageType.Homepage;
                 }
-                if (getPageType() === PageType.Watching && previousDomChangeType != PageType.Watching) {
-                    previousDomChangeType = PageType.Watching;
-                    if (lastViewedTitleHref) {
-                        (0, netflix_1.onNetflixWatchPage)(lastViewedTitleHref);
+                if (oldHref != document.location.href) {
+                    oldHref = document.location.href;
+                    if (getPageType() === PageType.Details) {
+                        (0, netflix_1.onNetflixDetailsPage)();
+                        previousDomChangeType = PageType.Details;
+                    }
+                    if (getPageType() === PageType.Watching && previousDomChangeType != PageType.Watching) {
+                        previousDomChangeType = PageType.Watching;
+                        if (lastViewedTitleHref) {
+                            (0, netflix_1.onNetflixWatchPage)(lastViewedTitleHref);
+                        }
                     }
                 }
             }
@@ -641,8 +652,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getNetflixTitleHref = exports.onNetflixWatchPage = exports.onNetflixHomepage = void 0;
+exports.getAlternateTitleHref = exports.getNetflixTitleHref = exports.onNetflixWatchPage = exports.onNetflixDetailsPage = exports.onNetflixHomepage = void 0;
 var utils_1 = __webpack_require__(974);
+var lastGrabbedRatingsFromTitleCard = null;
 var lastViewedTitleHref = null;
 function onNetflixHomepage() {
     return __awaiter(this, void 0, void 0, function () {
@@ -652,7 +664,7 @@ function onNetflixHomepage() {
             if (lastViewedTitleHref != titleHref) {
                 lastViewedTitleHref = titleHref;
                 if (titleHref) {
-                    handleTitleCardHover();
+                    handleTitleCardHover(lastViewedTitleHref);
                 }
             }
             return [2 /*return*/];
@@ -660,6 +672,21 @@ function onNetflixHomepage() {
     });
 }
 exports.onNetflixHomepage = onNetflixHomepage;
+function onNetflixDetailsPage() {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            if (lastViewedTitleHref)
+                handleShowInformationCard(lastViewedTitleHref);
+            else {
+                lastViewedTitleHref = getAlternateTitleHref();
+                if (lastViewedTitleHref)
+                    handleShowInformationCard(lastViewedTitleHref);
+            }
+            return [2 /*return*/];
+        });
+    });
+}
+exports.onNetflixDetailsPage = onNetflixDetailsPage;
 function onNetflixWatchPage(titleHref) {
     return __awaiter(this, void 0, void 0, function () {
         var spliceIndex, episodeID, limit, endTime, startTime, duration, start, end;
@@ -708,18 +735,50 @@ function onNetflixWatchPage(titleHref) {
     });
 }
 exports.onNetflixWatchPage = onNetflixWatchPage;
-function handleTitleCardHover() {
+function handleShowInformationCard(titleHref) {
     return __awaiter(this, void 0, void 0, function () {
-        var parent, titleHref, ratings, ratingsElement;
+        var parent, ratings, ratingsElement;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    parent = document.getElementsByClassName("detail-modal-container")[0];
+                    (0, utils_1.addLoader)(parent, /*number=*/ 1, /*insertBefore=*/ true);
+                    if (!(!lastGrabbedRatingsFromTitleCard || lastGrabbedRatingsFromTitleCard.id != titleHref)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, (0, utils_1.getRatings)({ id: titleHref, click: true })];
+                case 1:
+                    ratings = _a.sent();
+                    lastGrabbedRatingsFromTitleCard = ratings;
+                    lastGrabbedRatingsFromTitleCard.id = titleHref;
+                    return [3 /*break*/, 3];
+                case 2:
+                    // Use cached ratings if we have them.
+                    ratings = lastGrabbedRatingsFromTitleCard;
+                    _a.label = 3;
+                case 3:
+                    ratingsElement = document.createElement("span");
+                    ratingsElement.className = "previewModal--metadatAndControls-tags-container";
+                    ratingsElement.innerHTML =
+                        "\n  <div class=\"evidence-tags\">\n    <div class=\"evidence-list\">\n      <div class=\"evidence-item\">\n        <span class=\"evidence-text\" style=\"font-size:20px\">\n          IMDb: <span style=\"color:".concat(ratings.imdb_color, "\">").concat(ratings.imdb_rating, "</span> \n        </span>\n      </div>\n      <div class=\"evidence-item\">\n        <span class=\"evidence-separator\"></span>\n        <span class=\"evidence-text\" style=\"font-size:20px\">\n          Rotten Tomatoes: <span style=\"color:").concat(ratings.rt_color, "\">").concat(ratings.rt_rating, "</span> \n        </span>\n      </div>\n    </div>\n  </div>\n  ");
+                    (0, utils_1.removeLoader)(parent);
+                    parent.insertBefore(ratingsElement, parent.children[0]);
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function handleTitleCardHover(titleHref) {
+    return __awaiter(this, void 0, void 0, function () {
+        var parent, ratings, ratingsElement;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     parent = document.getElementsByClassName("previewModal--metadatAndControls-container")[0];
                     (0, utils_1.addLoader)(parent);
-                    titleHref = getNetflixTitleHref();
                     return [4 /*yield*/, (0, utils_1.getRatings)({ id: titleHref })];
                 case 1:
                     ratings = _a.sent();
+                    lastGrabbedRatingsFromTitleCard = ratings;
+                    lastGrabbedRatingsFromTitleCard.id = titleHref;
                     ratingsElement = document.createElement("span");
                     ratingsElement.className = "previewModal--metadatAndControls-tags-container";
                     ratingsElement.innerHTML =
@@ -750,6 +809,21 @@ function getNetflixTitleHref() {
     }
 }
 exports.getNetflixTitleHref = getNetflixTitleHref;
+function getAlternateTitleHref() {
+    if (window.location.href.indexOf("title") == -1)
+        return null;
+    try {
+        var linkElements = document.querySelectorAll("link[rel='alternate']");
+        var link = linkElements[0].href;
+        if (!link)
+            return null;
+        return "https://" + link.slice(link.indexOf("www.netflix"));
+    }
+    catch (TypeError) {
+        return null;
+    }
+}
+exports.getAlternateTitleHref = getAlternateTitleHref;
 
 
 /***/ }),
@@ -932,13 +1006,19 @@ function delay(time) {
     return new Promise(function (resolve) { return setTimeout(resolve, time); });
 }
 exports.delay = delay;
-function addLoader(parent, scale) {
+function addLoader(parent, scale, insertBefore) {
     if (scale === void 0) { scale = 1; }
+    if (insertBefore === void 0) { insertBefore = false; }
     var loader = document.createElement("div");
     loader.className = "ratings-loader";
     loader.innerHTML = "\n\n  <div class=\"loadingio-spinner-rolling-mhlz99gyu8k\"><div class=\"ldio-ma7aqaeb3ij\">\n  <div></div>\n  </div></div>\n  <style type=\"text/css\">\n  @keyframes ldio-ma7aqaeb3ij {\n    0% { transform: translate(-50%,-50%) rotate(0deg); }\n    100% { transform: translate(-50%,-50%) rotate(360deg); }\n  }\n  .ldio-ma7aqaeb3ij div {\n    position: absolute;\n    width: 120px;\n    height: 120px;\n    border: 10px solid #ffffff;\n    border-top-color: transparent;\n    border-radius: 50%;\n  }\n  .ldio-ma7aqaeb3ij div {\n    animation: ldio-ma7aqaeb3ij 1s linear infinite;\n    top: 100px;\n    left: 100px\n  }\n  .loadingio-spinner-rolling-mhlz99gyu8k {\n    width: 50px;\n    height: 50px;\n    display: inline-block;\n    overflow: hidden;\n  }\n  .ldio-ma7aqaeb3ij {\n    width: 100%;\n    height: 100%;\n    position: relative;\n    transform: translateZ(0) scale(0.25);\n    backface-visibility: hidden;\n    transform-origin: 0 0px; /* see note above */\n  }\n  .ldio-ma7aqaeb3ij div { box-sizing: content-box; }\n\n  .ratings-loader {\n    display: flex;\n    justify-content: center;\n  }\n\n  </style>\n  ";
     loader.setAttribute('style', "transform: scale(".concat(scale, ");"));
-    parent.appendChild(loader);
+    if (insertBefore) {
+        parent.insertBefore(loader, parent.children[0]);
+    }
+    else {
+        parent.appendChild(loader);
+    }
 }
 exports.addLoader = addLoader;
 function removeLoader(parent) {
