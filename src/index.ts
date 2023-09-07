@@ -1,7 +1,6 @@
 import { onDisneyDetailsScreen, onDisneyWatchPage } from "./sites/disney+";
 import { getNetflixTitleHref, onNetflixHomepage, onNetflixDetailsPage, onNetflixWatchPage } from "./sites/netflix";
 import { getHBOTitleHref, onHBOHomepage, onHBOWatchPage, onHBODetailsScreen} from "./sites/hbo";
-import { getRatings } from "./utils/utils";
 
 enum StreamingSite {
   Netflix,
