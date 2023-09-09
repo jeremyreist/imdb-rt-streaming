@@ -1,4 +1,4 @@
-import { addLoader, delay, getRatings, removeLoader } from "../../utils/utils"
+import { Rating, addLoader, delay, getRatings, removeLoader } from "../../utils/utils"
 
 var lastGrabbedRatingsFromTitleCard = null;
 var lastViewedTitleHref = null;
@@ -64,7 +64,7 @@ export async function onNetflixWatchPage(titleHref: string) {
 async function handleShowInformationCard(titleHref: string) {
   const parent = document.getElementsByClassName("detail-modal-container")[0]; // Info box.
   addLoader(parent, /*number=*/1, /*insertBefore=*/true);
-  let ratings;
+  let ratings: Rating;
   if (!lastGrabbedRatingsFromTitleCard || lastGrabbedRatingsFromTitleCard.id != titleHref) {
     ratings = await getRatings({ id: titleHref, click: true });
     lastGrabbedRatingsFromTitleCard = ratings;
