@@ -1,37 +1,40 @@
 <!doctype html>
 <html>
+
 <head>
-<meta charset="utf-8">
-<title>popup</title>
-<link href="popup.css" rel="stylesheet" type="text/css">
-<script src="popup.js" charset="utf-8"></script>
+	<meta charset="utf-8">
+	<title>popup</title>
+	<link href="popup.css" rel="stylesheet" type="text/css">
+	<script src="popup.js" charset="utf-8"></script>
 </head>
 
 <body>
-<div class="header-container">
-	<header>
- 		<img class = "img" src="popup_logo.png" alt="logo"/>
- 		<h3>IMDb &amp; Rotten Tomatoes for Streaming&nbsp;</h3>
-  </header>
-</div>
-	
-<div class="settings-panel">
-  <h3 class="settings-header">Settings</h3>
-  <li class = "settings-list-header">Hide Ratings</li>
-  	<div class="switch">
-      	<input id="hide-button" type="checkbox" class= "switch__input">
-	  	<label for="hide-button" class="switch__label"></label>
+	<div class="header-container">
+		<header>
+			<img class="img" src="popup_logo.png" alt="logo" />
+			<h3>IMDb &amp; Rotten Tomatoes for Streaming&nbsp;</h3>
+		</header>
 	</div>
-	
-	<hr class="settings-divider">
 
-  <li class = "settings-list-header">Color Ratings</li>
-	<div class="switch">
-      	<input id="color-button" type="checkbox" class= "switch__input">
-	  	<label for="color-button" class="switch__label"></label>
+	<div class="settings-panel">
+		<h3 class="settings-header">Settings</h3>
+		<li class="settings-list-header">Disable Ratings</li>
+		<div class="switch">
+			<input id="hide-button" type="checkbox" class="switch__input">
+			<label for="hide-button" class="switch__label"></label>
+		</div>
+
+		<hr class="settings-divider">
+
+		<li class="settings-list-header">Color Ratings</li>
+		<div class="switch">
+			<input id="color-button" type="checkbox" class="switch__input">
+			<label for="color-button" class="switch__label"></label>
+		</div>
+		<li class="settings-list-desc">Displays color on the rating text, depending on the value of the rating.</li>
+		<hr class="settings-divider">
+		<button class="refresh-button" id="refresh-page-button">Refresh Page</button>
 	</div>
-  <li class = "settings-list-desc">Displays color on the rating text, depending on the value of the rating.</li>
-	<hr class="settings-divider">
-</div>
 </body>
+
 </html>

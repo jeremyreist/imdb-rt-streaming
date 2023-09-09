@@ -5,10 +5,11 @@ var __webpack_exports__ = {};
 ;// CONCATENATED MODULE: ./src/utils/utils.ts
 async function getRatings(params) {
     const { id, episode, api = "8mds8d7d55", click, start, end } = { ...params };
-    let colorsEnabled = (await chrome.storage.local.get({ 'color': true })).color;
+    let colorsEnabled = (await chrome.storage.sync.get({ 'color': true })).color;
     if (!click) {
         const localRating = await checkLocalStorage(id);
         if (localRating) {
+            updateLocalRatingColors(localRating, colorsEnabled);
             return localRating;
         }
     }
@@ -27,6 +28,18 @@ async function getRatings(params) {
     const response = formatApiData(await request.json(), colorsEnabled);
     await addToLocalStorage(id, response);
     return response;
+}
+function updateLocalRatingColors(rating, colorsEnabled) {
+    if (colorsEnabled) {
+        let rt_integer = parseInt(rating.rt_rating.slice(0, 2));
+        let imdb_integer = parseInt(rating.imdb_rating.slice(0, 1)) * 10 + parseInt(rating.imdb_rating.slice(2));
+        rating.rt_color = getHexColor(rt_integer);
+        rating.imdb_color = getHexColor(imdb_integer);
+    }
+    else {
+        rating.imdb_color = "#FFF";
+        rating.rt_color = "#FFF";
+    }
 }
 async function checkLocalStorage(titleHref) {
     var localStorage = await chrome.storage.local.get(["previous_ratings"]);
@@ -389,7 +402,7 @@ function clearAllHBOTiles() {
 }
 async function onHBOHomepage() {
     if (window.location.href.indexOf("play.max.com") > -1) {
-        handleUSHomepage();
+        handleVisibleTiles();
     }
     else {
         const titleHref = getHBOTitleHref();
@@ -443,10 +456,12 @@ async function onHBODetailsScreen() {
                 await delay(10);
             }
             const parent = document.getElementsByClassName("StyledButtonRowWrapper-Beam-Web-Ent__sc-1kctvbk-0 bZyQWW")[0];
-            parent.children[1].appendChild(ratingsElement);
-            fadeIn(ratingsElement, 0.0);
+            if (parent.getElementsByClassName("ratings").length == 0) {
+                parent.children[1].appendChild(ratingsElement);
+                fadeIn(ratingsElement, 0.0);
+            }
         }
-        handleUSHomepage();
+        handleVisibleTiles();
     }
     else {
         const titleHref = window.location.href.slice(0, window.location.href.indexOf(":type:"));
@@ -577,7 +592,7 @@ async function hbo_handleTitleCardHover() {
         }
     }
 }
-async function handleUSHomepage() {
+async function handleVisibleTiles() {
     // Select only visible tiles.
     let tiles = document.querySelectorAll('.StyledTileLink-Beam-Web-Ent__sc-ljn9vj-25.cWVPKn.skipNavFocusable[data-first-visible="true"]');
     for (let i = 0; i < tiles.length; i++) {
@@ -589,14 +604,20 @@ async function handleUSHomepage() {
         let tileElement, tileSection, isTopTen;
         try {
             tileElement = tile;
+        }
+        catch (error) {
+            console.log("Encountered an error processing tile: " + tile);
+            console.log(error);
+        }
+        try {
             // The row of tiles containing this tile.
             tileSection = tileElement.parentElement.parentElement.parentElement.parentElement.parentElement;
             isTopTen = tileSection.getAttribute("data-testid") == "home-page-rail-top-10-movies_numberedRail"
                 || tileSection.getAttribute("data-testid") == "home-page-rail-top-10-series_numberedRail";
         }
         catch (error) {
-            console.log("Encountered an error processing tile: " + tile);
-            console.log(error);
+            // Don't do anything, since this can actually be expected behavior in certain cases
+            // such as in the search page where there are no tile sections.
         }
         // If the current tile already has ratings or is currently being processed, or is null, skip.
         let showName = tileElement.getAttribute("aria-label");
@@ -671,7 +692,10 @@ var currSite = StreamingSite.None;
 var oldHref = document.location.href;
 var src_lastViewedTitleHref = null;
 window.addEventListener("load", onLoad);
-function onLoad(event) {
+async function onLoad(event) {
+    // Check if the extension is enabled.
+    if ((await chrome.storage.sync.get({ 'hidden': false })).hidden)
+        return;
     // Determine what streaming site we are on
     if (window.location.href.indexOf("netflix.com/") > -1) {
         currSite = StreamingSite.Netflix;

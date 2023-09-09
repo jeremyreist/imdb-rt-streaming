@@ -2,7 +2,7 @@
 	"name": "SVODEX",
 	"version": "3.2.2",
 	"description": "Adds the IMDb and Rotten Tomatoes rating to every available title on Netflix, Disney+ and HBO Max",
-	"permissions": ["storage"],
+	"permissions": ["storage", "tabs"],
 	"content_scripts": [{
 		"matches": [
 			"https://www.netflix.com/*",

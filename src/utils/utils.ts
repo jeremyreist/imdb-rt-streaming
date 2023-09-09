@@ -16,10 +16,11 @@ export interface ApiParams {
 
 export async function getRatings(params: ApiParams): Promise<Rating> {
   const { id, episode, api = "8mds8d7d55", click, start, end } = { ...params }
-  let colorsEnabled = (await chrome.storage.local.get({ 'color': true })).color;
+  let colorsEnabled = (await chrome.storage.sync.get({ 'color': true })).color;
   if (!click) {
     const localRating = await checkLocalStorage(id);
     if (localRating) {
+      updateLocalRatingColors(localRating, colorsEnabled);
       return localRating
     }
   }
@@ -37,7 +38,19 @@ export async function getRatings(params: ApiParams): Promise<Rating> {
   const response = formatApiData(await request.json(), colorsEnabled)
   await addToLocalStorage(id, response);
   return response
+}
 
+function updateLocalRatingColors(rating, colorsEnabled) {
+  if (colorsEnabled) {
+    let rt_integer = parseInt(rating.rt_rating.slice(0, 2));
+    let imdb_integer = parseInt(rating.imdb_rating.slice(0, 1)) * 10 + parseInt(rating.imdb_rating.slice(2));
+    rating.rt_color = getHexColor(rt_integer);
+    rating.imdb_color = getHexColor(imdb_integer);
+  }
+  else {
+    rating.imdb_color = "#FFF";
+    rating.rt_color = "#FFF";
+  }
 }
 
 async function checkLocalStorage(titleHref: string): Promise<Rating | null> {

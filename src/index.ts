@@ -24,7 +24,9 @@ var oldHref = document.location.href;
 var lastViewedTitleHref = null;
 window.addEventListener("load", onLoad);
 
-function onLoad(event: Event) {
+async function onLoad(event: Event) {
+  // Check if the extension is enabled.
+  if ((await chrome.storage.sync.get({ 'hidden': false })).hidden) return;
   // Determine what streaming site we are on
   if (window.location.href.indexOf("netflix.com/") > -1) {
     currSite = StreamingSite.Netflix;
