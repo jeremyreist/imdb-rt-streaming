@@ -15,15 +15,15 @@ export interface ApiParams {
 }
 
 export async function getRatings(params: ApiParams): Promise<Rating> {
-  const {id, episode, api = "8mds8d7d55", click, start, end} = {...params}
-
+  const { id, episode, api = "8mds8d7d55", click, start, end } = { ...params }
+  let colorsEnabled = (await chrome.storage.local.get({ 'color': true })).color;
   if (!click) {
     const localRating = await checkLocalStorage(id);
-    if (localRating){
+    if (localRating) {
       return localRating
     }
   }
-  
+
   const apiUrl = new URL(`https://filmtoro.com/api/watch.asp`);
   apiUrl.searchParams.append('id', id);
   apiUrl.searchParams.append('api', api);
@@ -34,10 +34,10 @@ export async function getRatings(params: ApiParams): Promise<Rating> {
   if (typeof end !== 'undefined') apiUrl.searchParams.append('end', end.toString());
 
   const request = await fetch(apiUrl);
-  const response = formatApiData(await request.json())
+  const response = formatApiData(await request.json(), colorsEnabled)
   await addToLocalStorage(id, response);
   return response
-  
+
 }
 
 async function checkLocalStorage(titleHref: string): Promise<Rating | null> {
@@ -45,7 +45,7 @@ async function checkLocalStorage(titleHref: string): Promise<Rating | null> {
   if (!localStorage.previous_ratings) {
     return null
   } else {
-    if (localStorage.previous_ratings[titleHref]){
+    if (localStorage.previous_ratings[titleHref]) {
       return localStorage.previous_ratings[titleHref]
     }
     return null
@@ -59,8 +59,8 @@ async function addToLocalStorage(titleHref: string, rating: Rating) {
   if (!result.previous_ratings) {
     // If we have not stored previous ratings before
     initial_ratings[titleHref] = rating;
-    await chrome.storage.local.set({ 
-      previous_ratings: initial_ratings 
+    await chrome.storage.local.set({
+      previous_ratings: initial_ratings
     });
   } else if (!(titleHref in result.previous_ratings)) {
     // If we have stored ratings and it's not already stored
@@ -71,23 +71,23 @@ async function addToLocalStorage(titleHref: string, rating: Rating) {
   }
 }
 
-function formatApiData(apiData: any): Rating {
-  let output = {rt_rating: 'N/A', imdb_rating: 'N/A', imdb_color: "#FFF", rt_color: "#FFF"}
-  if (apiData['film_imdb_rating'] > 0){
-    output.imdb_rating = `${(apiData['film_imdb_rating']/10).toFixed(1)}`
-    output.imdb_color = getHexColor(apiData['film_imdb_rating']);
+function formatApiData(apiData: any, colorsEnabled): Rating {
+  let output = { rt_rating: 'N/A', imdb_rating: 'N/A', imdb_color: "#FFF", rt_color: "#FFF" }
+  if (apiData['film_imdb_rating'] > 0) {
+    output.imdb_rating = `${(apiData['film_imdb_rating'] / 10).toFixed(1)}`
+    output.imdb_color = colorsEnabled ? getHexColor(apiData['film_imdb_rating']) : "#FFF";
   }
-  if (apiData['film_rt_rating'] > 0){
+  if (apiData['film_rt_rating'] > 0) {
     output.rt_rating = `${apiData['film_rt_rating']}%`
-    output.rt_color = getHexColor(apiData['film_rt_rating']);
+    output.rt_color = colorsEnabled ? getHexColor(apiData['film_rt_rating']) : "#FFF";
   }
   return output
 }
 
 function getHexColor(rating) {
   // Define the endpoint colors
-  const startColor = [199, 0, 57]; // Dark Red (RGB)
-  const endColor = [46, 204, 113];  // Dark Green (RGB)
+  const startColor = [237, 38, 48]; // Bright Red (RGB)
+  const endColor = [17, 217, 17];  // Bright Green (RGB)
 
   // Calculate the interpolated color
   const lerpedColor = startColor.map((startValue, index) => {
@@ -162,14 +162,14 @@ export function addLoader(parent: Element, scale: number = 1, insertBefore: bool
   </style>
   `;
   loader.setAttribute('style', `transform: scale(${scale});`)
-  if(insertBefore){
+  if (insertBefore) {
     parent.insertBefore(loader, parent.children[0]);
   } else {
-  parent.appendChild(loader);
+    parent.appendChild(loader);
   }
 }
 
-export function removeLoader(parent: Element){
+export function removeLoader(parent: Element) {
   const loader = parent.getElementsByClassName("ratings-loader")[0];
   parent.removeChild(loader);
 }

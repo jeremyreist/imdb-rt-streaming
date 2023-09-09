@@ -8,6 +8,7 @@
 			"https://www.netflix.com/*",
 			"https://www.disneyplus.com/*",
 			"https://play.hbomax.com/*",
+			"https://play.max.com/*",
 			"https://www.primevideo.com/*",
 			"https://www.apple.com/*",
 			"https://www.hulu.com/"
@@ -18,7 +19,8 @@
 		"run_at": "document_end"
 	}],
 	"action": {
-		"default_title": "SVODEX"
+		"default_title": "SVODEX",
+		"default_popup": "popup.html"
 	},
 	"icons": {
 		"128": "logo_small.png"

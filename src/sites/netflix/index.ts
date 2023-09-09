@@ -154,14 +154,12 @@ export function getNetflixTitleHref(): string | null {
 }
 
 export function getAlternateTitleHref(): string | null {
-  if (window.location.href.indexOf("title") == -1) return null;
-  try {
-    const linkElements = document.querySelectorAll("link[rel='alternate']");
-    const link = (linkElements[0] as HTMLLinkElement).href;
-    if (!link) return null;
-    return "https://" + link.slice(
-      link.indexOf("www.netflix"));
-  } catch (TypeError) {
-    return null;
+  if (window.location.href.indexOf("title") > -1){
+    return window.location.href;
   }
+  else if(window.location.href.indexOf("jbv") > -1){
+    let titleNumber = window.location.href.slice(window.location.href.indexOf("jbv=") + 4);
+    return "https://www.netflix.com/title/" + titleNumber;
+  }
+  return null;
 }
