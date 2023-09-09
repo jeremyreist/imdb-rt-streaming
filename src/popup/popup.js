@@ -38,6 +38,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function color() {
         chrome.storage.sync.set({ "color": colorButton.checked });
+        chrome.tabs.query({}, function (tabs) {
+            for (const tab of tabs) {
+                if (isSupportedStreamingSite(tab.url)) {
+                    tabsToReload.push(tab.id);
+                    refreshButton.style.display = "block";
+                }
+            }
+        });
     }
 
 }, false)
