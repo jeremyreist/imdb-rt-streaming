@@ -404,7 +404,6 @@ async function onHBOHomepage() {
 }
 async function onHBODetailsScreen() {
     if (window.location.href.indexOf("play.max.com") > -1) {
-        console.log("on details screeeen");
         let metaElement = document.querySelector('meta[property="og:url"]');
         let showName = document.getElementsByTagName('title')[0].innerHTML;
         let i = 0;
@@ -426,10 +425,8 @@ async function onHBODetailsScreen() {
         showName = showName.slice(0, showName.indexOf(" • Max"));
         if (!tilesLoadedOrBeingLoaded.has(showName)) {
             tilesLoadedOrBeingLoaded.add(showName);
-            console.log("showName:" + showName);
             let ratings;
             try {
-                console.log("Getting ratings for: " + titleHref);
                 ratings = await getRatings({ id: titleHref });
             }
             catch (error) {
