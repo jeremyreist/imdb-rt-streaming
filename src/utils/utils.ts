@@ -1,6 +1,10 @@
 export interface Rating {
   rt_rating: string;
+  rt_audience_rating: string;
   rt_color: string;
+  rt_audience_color: string;
+  rt_critic_icon : string;
+  rt_audience_icon: string;
   imdb_rating: string;
   imdb_color: string;
 }
@@ -13,6 +17,11 @@ export interface ApiParams {
   start?: number;
   end?: number;
 }
+
+let critic_fresh_src = chrome.runtime.getURL("critic_fresh.svg");
+let critic_rotten_src = chrome.runtime.getURL("critic_rotten.svg");
+let audience_fresh_src = chrome.runtime.getURL("audience_fresh.svg");
+let audience_rotten_src = chrome.runtime.getURL("audience_rotten.svg");
 
 export async function getRatings(params: ApiParams): Promise<Rating> {
   const { id, episode, api = "8mds8d7d55", click, start, end } = { ...params }
@@ -85,14 +94,24 @@ async function addToLocalStorage(titleHref: string, rating: Rating) {
 }
 
 function formatApiData(apiData: any, colorsEnabled): Rating {
-  let output = { rt_rating: 'N/A', imdb_rating: 'N/A', imdb_color: "#FFF", rt_color: "#FFF" }
+  let output = {
+    rt_rating: 'N/A', imdb_rating: 'N/A', rt_audience_rating: '',
+    imdb_color: "#FFF", rt_color: "#FFF", rt_audience_color: "#FFF",
+    rt_critic_icon: '', rt_audience_icon: ''
+  }
   if (apiData['film_imdb_rating'] > 0) {
-    output.imdb_rating = `${(apiData['film_imdb_rating'] / 10).toFixed(1)}`
+    output.imdb_rating = `${(apiData['film_imdb_rating'] / 10).toFixed(1)}`;
     output.imdb_color = colorsEnabled ? getHexColor(apiData['film_imdb_rating']) : "#FFF";
   }
   if (apiData['film_rt_rating'] > 0) {
-    output.rt_rating = `${apiData['film_rt_rating']}%`
+    output.rt_rating = `${apiData['film_rt_rating']}%`;
+    output.rt_critic_icon = apiData['film_rt_rating'] >= 50 ?  critic_fresh_src : critic_rotten_src;
     output.rt_color = colorsEnabled ? getHexColor(apiData['film_rt_rating']) : "#FFF";
+  }
+  if (apiData['film_rt_audience'] > 0) {
+    output.rt_audience_rating = `${apiData['film_rt_audience']}%`;
+    output.rt_audience_icon = apiData['film_rt_audience'] >= 50 ?  audience_fresh_src : audience_rotten_src;
+    output.rt_audience_color = colorsEnabled ? getHexColor(apiData['film_rt_audience']) : "#FFF";
   }
   return output
 }

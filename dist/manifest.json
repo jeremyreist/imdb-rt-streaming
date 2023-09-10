@@ -2,26 +2,44 @@
 	"name": "SVODEX",
 	"version": "3.2.2",
 	"description": "Adds the IMDb and Rotten Tomatoes rating to every available title on Netflix, Disney+ and HBO Max",
-	"permissions": ["storage", "tabs"],
-	"content_scripts": [{
-		"matches": [
-			"https://www.netflix.com/*",
-			"https://www.disneyplus.com/*",
-			"https://play.hbomax.com/*",
-			"https://play.max.com/*",
-			"https://www.primevideo.com/*",
-			"https://www.apple.com/*",
-			"https://www.hulu.com/"
-		],
-		"js": [
-			"main.js"
-		],
-		"run_at": "document_end"
-	}],
+	"permissions": [
+		"storage",
+		"tabs"
+	],
+	"content_scripts": [
+		{
+			"matches": [
+				"https://www.netflix.com/*",
+				"https://www.disneyplus.com/*",
+				"https://play.hbomax.com/*",
+				"https://play.max.com/*",
+				"https://www.primevideo.com/*",
+				"https://www.apple.com/*",
+				"https://www.hulu.com/"
+			],
+			"js": [
+				"main.js"
+			],
+			"run_at": "document_end"
+		}
+	],
 	"action": {
 		"default_title": "SVODEX",
 		"default_popup": "popup.html"
 	},
+	"web_accessible_resources": [
+		{
+			"resources": [
+				"*.svg"
+			],
+			"matches": [
+				"https://play.hbomax.com/*",
+				"https://play.max.com/*",
+				"https://www.netflix.com/*",
+				"https://www.disneyplus.com/*"
+			]
+		}
+	],
 	"icons": {
 		"128": "logo_small.png"
 	},

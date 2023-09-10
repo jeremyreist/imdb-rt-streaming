@@ -3,6 +3,10 @@
 var __webpack_exports__ = {};
 
 ;// CONCATENATED MODULE: ./src/utils/utils.ts
+let critic_fresh_src = chrome.runtime.getURL("critic_fresh.svg");
+let critic_rotten_src = chrome.runtime.getURL("critic_rotten.svg");
+let audience_fresh_src = chrome.runtime.getURL("audience_fresh.svg");
+let audience_rotten_src = chrome.runtime.getURL("audience_rotten.svg");
 async function getRatings(params) {
     const { id, episode, api = "8mds8d7d55", click, start, end } = { ...params };
     let colorsEnabled = (await chrome.storage.sync.get({ 'color': true })).color;
@@ -72,14 +76,24 @@ async function addToLocalStorage(titleHref, rating) {
     }
 }
 function formatApiData(apiData, colorsEnabled) {
-    let output = { rt_rating: 'N/A', imdb_rating: 'N/A', imdb_color: "#FFF", rt_color: "#FFF" };
+    let output = {
+        rt_rating: 'N/A', imdb_rating: 'N/A', rt_audience_rating: '',
+        imdb_color: "#FFF", rt_color: "#FFF", rt_audience_color: "#FFF",
+        rt_critic_icon: '', rt_audience_icon: ''
+    };
     if (apiData['film_imdb_rating'] > 0) {
         output.imdb_rating = `${(apiData['film_imdb_rating'] / 10).toFixed(1)}`;
         output.imdb_color = colorsEnabled ? getHexColor(apiData['film_imdb_rating']) : "#FFF";
     }
     if (apiData['film_rt_rating'] > 0) {
         output.rt_rating = `${apiData['film_rt_rating']}%`;
+        output.rt_critic_icon = apiData['film_rt_rating'] >= 50 ? critic_fresh_src : critic_rotten_src;
         output.rt_color = colorsEnabled ? getHexColor(apiData['film_rt_rating']) : "#FFF";
+    }
+    if (apiData['film_rt_audience'] > 0) {
+        output.rt_audience_rating = `${apiData['film_rt_audience']}%`;
+        output.rt_audience_icon = apiData['film_rt_audience'] >= 50 ? audience_fresh_src : audience_rotten_src;
+        output.rt_audience_color = colorsEnabled ? getHexColor(apiData['film_rt_audience']) : "#FFF";
     }
     return output;
 }
@@ -311,14 +325,17 @@ async function handleShowInformationCard(titleHref) {
     <div class="evidence-list">
       <div class="evidence-item">
         <span class="evidence-text" style="font-size:20px">
-          IMDb: <span style="color:${ratings.imdb_color}">${ratings.imdb_rating}</span> 
+          IMDb: <span style="color:${ratings.imdb_color}">${ratings.imdb_rating}</span>
         </span>
       </div>
       <div class="evidence-item">
         <span class="evidence-separator"></span>
         <span class="evidence-text" style="font-size:20px">
-          Rotten Tomatoes: <span style="color:${ratings.rt_color}">${ratings.rt_rating}</span> 
+          Rotten Tomatoes: <span style="color:${ratings.rt_color}">${ratings.rt_rating}</span>\u00A0<img style="width:15px" src="${ratings.rt_critic_icon}">
+          \u00A0<span style="color:${ratings.rt_audience_color}"> ${ratings.rt_audience_rating}\u00A0</span>
+          <img style="width:15px" src="${ratings.rt_audience_icon}">
         </span>
+        
       </div>
     </div>
   </div>
@@ -346,7 +363,7 @@ async function handleTitleCardHover(titleHref) {
       <div class="evidence-item">
         <span class="evidence-separator"></span>
         <span class="evidence-text">
-          Rotten Tomatoes: <span style="color:${ratings.rt_color}">${ratings.rt_rating}</span> 
+          Rotten Tomatoes: <span style="color:${ratings.rt_color}">${ratings.rt_rating}</span>\u00A0<img style="width:13px" src="${ratings.rt_critic_icon}"> 
         </span>
       </div>
     </div>
@@ -386,12 +403,6 @@ function getAlternateTitleHref() {
 
 ;// CONCATENATED MODULE: ./src/sites/hbo/index.ts
 
-var TileStatus;
-(function (TileStatus) {
-    TileStatus[TileStatus["NOT_LOADED"] = 0] = "NOT_LOADED";
-    TileStatus[TileStatus["LOADING"] = 1] = "LOADING";
-    TileStatus[TileStatus["LOADED"] = 2] = "LOADED";
-})(TileStatus || (TileStatus = {}));
 var lastHoveredTitleHref = null;
 var tilesLoadedOrBeingLoaded = new Set();
 var allVisibleTiles = new Set();
@@ -449,7 +460,8 @@ async function onHBODetailsScreen() {
             }
             const ratingsElement = document.createElement("h2");
             ratingsElement.className = "ratings css-1rynq56 r-dnmrzs r-1udh08x r-1udbk01 r-3s2u2q r-1iln25a";
-            ratingsElement.innerHTML = `IMDb: <span style="color:${ratings.imdb_color}">${ratings.imdb_rating}</span> \u00A0 Rotten Tomatoes: <span style="color:${ratings.rt_color}">${ratings.rt_rating}</span>`;
+            ratingsElement.innerHTML = `IMDb: <span style="color:${ratings.imdb_color}">${ratings.imdb_rating}</span> \u00A0 Rotten Tomatoes: <span style="color:${ratings.rt_color}">${ratings.rt_rating}</span>
+      \u00A0<img style="width:15px" src="${ratings.rt_critic_icon}">\u00A0<span style="color:${ratings.rt_audience_color}"> ${ratings.rt_audience_rating}\u00A0</span><img style="width:15px" src="${ratings.rt_audience_icon}">`;
             ratingsElement.setAttribute('style', 'color: rgba(255, 255, 255, 0.7); font-family: StreetLCG2; font-weight: 400; font-style: normal; font-size: 14px; letter-spacing: 0.5px; line-height: 18px; padding-left:20px; margin-top:30px');
             ratingsElement.style.opacity = '0';
             while (document.getElementsByClassName("StyledButtonRowWrapper-Beam-Web-Ent__sc-1kctvbk-0 bZyQWW").length <= 0) {
@@ -638,8 +650,8 @@ async function handleVisibleTiles() {
         }
         const ratingsElement = document.createElement("h2");
         ratingsElement.className = "ratings css-1rynq56 r-dnmrzs r-1udh08x r-1udbk01 r-3s2u2q r-1iln25a";
-        ratingsElement.innerHTML = `IMDb: <span style="color:${ratings.imdb_color}">${ratings.imdb_rating}</span> \u00A0 Rotten Tomatoes: <span style="color:${ratings.rt_color}">${ratings.rt_rating}</span>`;
-        ratingsElement.setAttribute('style', 'color: rgba(255, 255, 255, 0.7); font-family: StreetLCG2; font-weight: 400; font-style: normal; font-size: 12px; letter-spacing: 0.5px; line-height: 18px;');
+        ratingsElement.innerHTML = `IMDb: <span style="color:${ratings.imdb_color}">${ratings.imdb_rating}</span>\u00A0Rotten Tomatoes: <span style="color:${ratings.rt_color}">${ratings.rt_rating}</span>`;
+        ratingsElement.setAttribute('style', 'color: rgba(255, 255, 255, 0.7); font-family: StreetLCG2; font-weight: 400; font-style: normal; font-size: 10px; letter-spacing: 0.5px; line-height: 18px;');
         ratingsElement.style.opacity = '0';
         // Special UI for top ten series/movies section on homepage.
         if (isTopTen) {

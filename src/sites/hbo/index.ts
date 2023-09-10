@@ -1,11 +1,5 @@
 import { addLoader, delay, getRatings, removeLoader } from "../../utils/utils"
 
-enum TileStatus {
-  NOT_LOADED,
-  LOADING,
-  LOADED
-}
-
 var lastHoveredTitleHref = null;
 var tilesLoadedOrBeingLoaded = new Set();
 var allVisibleTiles = new Set();
@@ -67,7 +61,8 @@ export async function onHBODetailsScreen() {
 
       const ratingsElement = document.createElement("h2");
       ratingsElement.className = "ratings css-1rynq56 r-dnmrzs r-1udh08x r-1udbk01 r-3s2u2q r-1iln25a";
-      ratingsElement.innerHTML = `IMDb: <span style="color:${ratings.imdb_color}">${ratings.imdb_rating}</span> \u00A0 Rotten Tomatoes: <span style="color:${ratings.rt_color}">${ratings.rt_rating}</span>`;
+      ratingsElement.innerHTML = `IMDb: <span style="color:${ratings.imdb_color}">${ratings.imdb_rating}</span> \u00A0 Rotten Tomatoes: <span style="color:${ratings.rt_color}">${ratings.rt_rating}</span>
+      \u00A0<img style="width:15px" src="${ratings.rt_critic_icon}">\u00A0<span style="color:${ratings.rt_audience_color}"> ${ratings.rt_audience_rating}\u00A0</span><img style="width:15px" src="${ratings.rt_audience_icon}">`;
       ratingsElement.setAttribute('style', 'color: rgba(255, 255, 255, 0.7); font-family: StreetLCG2; font-weight: 400; font-style: normal; font-size: 14px; letter-spacing: 0.5px; line-height: 18px; padding-left:20px; margin-top:30px');
       ratingsElement.style.opacity = '0';
       while (document.getElementsByClassName("StyledButtonRowWrapper-Beam-Web-Ent__sc-1kctvbk-0 bZyQWW").length <= 0) {
@@ -275,8 +270,8 @@ async function handleVisibleTiles() {
 
     const ratingsElement = document.createElement("h2");
     ratingsElement.className = "ratings css-1rynq56 r-dnmrzs r-1udh08x r-1udbk01 r-3s2u2q r-1iln25a";
-    ratingsElement.innerHTML = `IMDb: <span style="color:${ratings.imdb_color}">${ratings.imdb_rating}</span> \u00A0 Rotten Tomatoes: <span style="color:${ratings.rt_color}">${ratings.rt_rating}</span>`;
-    ratingsElement.setAttribute('style', 'color: rgba(255, 255, 255, 0.7); font-family: StreetLCG2; font-weight: 400; font-style: normal; font-size: 12px; letter-spacing: 0.5px; line-height: 18px;');
+    ratingsElement.innerHTML = `IMDb: <span style="color:${ratings.imdb_color}">${ratings.imdb_rating}</span>\u00A0Rotten Tomatoes: <span style="color:${ratings.rt_color}">${ratings.rt_rating}</span>`;
+    ratingsElement.setAttribute('style', 'color: rgba(255, 255, 255, 0.7); font-family: StreetLCG2; font-weight: 400; font-style: normal; font-size: 10px; letter-spacing: 0.5px; line-height: 18px;');
     ratingsElement.style.opacity = '0';
     // Special UI for top ten series/movies section on homepage.
     if (isTopTen) {
