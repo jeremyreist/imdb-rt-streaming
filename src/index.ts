@@ -171,14 +171,17 @@ function getPageType(): PageType {
     } else if (window.location.href.indexOf(":type:series") > -1
       || window.location.href.indexOf(":type:feature") > -1
       || window.location.href.indexOf("/show/") > -1
-      || window.location.href.indexOf("/movie/") > -1) {
+      || window.location.href.indexOf("/movie/") > -1
+      || window.location.href.indexOf("/mini-series/") > -1
+      || window.location.href.indexOf("/standalone/") > -1) {
       currPage = PageType.Details
     } else if (window.location.href.indexOf("/page/urn:hbo:page:") > -1
       || window.location.href.indexOf(":collection:") > -1
       || window.location.href.indexOf(":franchise:") > -1
       || window.location.href == "https://play.max.com/"
       || window.location.href == "https://play.max.com/home"
-      || window.location.href.indexOf("https://play.max.com/search") > -1) {
+      || window.location.href.indexOf("https://play.max.com/search") > -1
+      || window.location.href.indexOf("https://play.max.com/channel") > -1) {
       currPage = PageType.Homepage
     } else {
       currPage = PageType.None

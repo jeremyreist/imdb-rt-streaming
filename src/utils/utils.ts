@@ -51,10 +51,20 @@ export async function getRatings(params: ApiParams): Promise<Rating> {
 
 function updateLocalRatingColors(rating, colorsEnabled) {
   if (colorsEnabled) {
-    let rt_integer = parseInt(rating.rt_rating.slice(0, 2));
-    let imdb_integer = parseInt(rating.imdb_rating.slice(0, 1)) * 10 + parseInt(rating.imdb_rating.slice(2));
-    rating.rt_color = getHexColor(rt_integer);
-    rating.imdb_color = getHexColor(imdb_integer);
+    let rt_integer, imdb_integer, rt_audience_integer;
+    // Edge case: rating = 100. 
+    if(rating.rt_rating.length > 3) rt_integer = 100;
+    else rt_integer = parseInt(rating.rt_rating.slice(0, 2));
+    if(rating.rt_audience_rating.length > 3) rt_audience_integer = 100;
+    else rt_audience_integer = parseInt(rating.rt_audience_rating.slice(0, 2));
+    imdb_integer = parseInt(rating.imdb_rating.slice(0, 1)) * 10 + parseInt(rating.imdb_rating.slice(2));
+
+    if(!isNaN(rt_integer))
+      rating.rt_color = getHexColor(rt_integer);
+    if(!isNaN(imdb_integer))
+      rating.imdb_color = getHexColor(imdb_integer);
+    if(!isNaN(rt_audience_integer))
+      rating.rt_audience_color = getHexColor(rt_audience_integer);
   }
   else {
     rating.imdb_color = "#FFF";

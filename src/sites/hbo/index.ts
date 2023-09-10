@@ -56,7 +56,11 @@ export async function onHBODetailsScreen() {
       catch (error) {
         console.log("Error getting ratings for: " + titleHref);
         console.log(error);
-        ratings = { rt_rating: 'N/A', imdb_rating: 'N/A', imdb_color: "#FFFFFF", rt_color: "#FFFFFF" };
+        ratings = {
+          rt_rating: 'N/A', imdb_rating: 'N/A', rt_audience_rating: '',
+          imdb_color: "#FFF", rt_color: "#FFF", rt_audience_color: "#FFF",
+          rt_critic_icon: '', rt_audience_icon: ''
+        };
       }
 
       const ratingsElement = document.createElement("h2");
@@ -252,12 +256,14 @@ async function handleVisibleTiles() {
 
     // If the current tile already has ratings or is currently being processed, or is null, skip.
     let showName = tileElement.getAttribute("aria-label");
-    if (tileElement.getElementsByTagName('h2').length > 0 ||
+    if (tileElement.getElementsByClassName('ratings').length > 0 ||
       tilesLoadedOrBeingLoaded.has(showName)
       || tileElement.href == null) continue;
 
     // Prevent duplicates being added from other threads.
     tilesLoadedOrBeingLoaded.add(showName);
+    // Do not add ratings for channels.
+    if(tileElement.href.indexOf('/channel/') > -1) continue;
     let ratings;
     try {
       ratings = await getRatings({ id: tileElement.href });
@@ -279,8 +285,11 @@ async function handleVisibleTiles() {
       ratingsElement.style.position = 'absolute';
       tileElement.parentElement.parentElement.style.height = '249px';
     }
-    tileElement.appendChild(ratingsElement);
-    fadeIn(ratingsElement, 0.0);
+    // Prevents an edge-case.
+    if (tileElement.getElementsByClassName('ratings').length == 0) {
+      tileElement.appendChild(ratingsElement);
+      fadeIn(ratingsElement, 0.0);
+    }
   }
 }
 

@@ -35,10 +35,23 @@ async function getRatings(params) {
 }
 function updateLocalRatingColors(rating, colorsEnabled) {
     if (colorsEnabled) {
-        let rt_integer = parseInt(rating.rt_rating.slice(0, 2));
-        let imdb_integer = parseInt(rating.imdb_rating.slice(0, 1)) * 10 + parseInt(rating.imdb_rating.slice(2));
-        rating.rt_color = getHexColor(rt_integer);
-        rating.imdb_color = getHexColor(imdb_integer);
+        let rt_integer, imdb_integer, rt_audience_integer;
+        // Edge case: rating = 100. 
+        if (rating.rt_rating.length > 3)
+            rt_integer = 100;
+        else
+            rt_integer = parseInt(rating.rt_rating.slice(0, 2));
+        if (rating.rt_audience_rating.length > 3)
+            rt_audience_integer = 100;
+        else
+            rt_audience_integer = parseInt(rating.rt_audience_rating.slice(0, 2));
+        imdb_integer = parseInt(rating.imdb_rating.slice(0, 1)) * 10 + parseInt(rating.imdb_rating.slice(2));
+        if (!isNaN(rt_integer))
+            rating.rt_color = getHexColor(rt_integer);
+        if (!isNaN(imdb_integer))
+            rating.imdb_color = getHexColor(imdb_integer);
+        if (!isNaN(rt_audience_integer))
+            rating.rt_audience_color = getHexColor(rt_audience_integer);
     }
     else {
         rating.imdb_color = "#FFF";
@@ -456,7 +469,11 @@ async function onHBODetailsScreen() {
             catch (error) {
                 console.log("Error getting ratings for: " + titleHref);
                 console.log(error);
-                ratings = { rt_rating: 'N/A', imdb_rating: 'N/A', imdb_color: "#FFFFFF", rt_color: "#FFFFFF" };
+                ratings = {
+                    rt_rating: 'N/A', imdb_rating: 'N/A', rt_audience_rating: '',
+                    imdb_color: "#FFF", rt_color: "#FFF", rt_audience_color: "#FFF",
+                    rt_critic_icon: '', rt_audience_icon: ''
+                };
             }
             const ratingsElement = document.createElement("h2");
             ratingsElement.className = "ratings css-1rynq56 r-dnmrzs r-1udh08x r-1udbk01 r-3s2u2q r-1iln25a";
@@ -633,12 +650,15 @@ async function handleVisibleTiles() {
         }
         // If the current tile already has ratings or is currently being processed, or is null, skip.
         let showName = tileElement.getAttribute("aria-label");
-        if (tileElement.getElementsByTagName('h2').length > 0 ||
+        if (tileElement.getElementsByClassName('ratings').length > 0 ||
             tilesLoadedOrBeingLoaded.has(showName)
             || tileElement.href == null)
             continue;
         // Prevent duplicates being added from other threads.
         tilesLoadedOrBeingLoaded.add(showName);
+        // Do not add ratings for channels.
+        if (tileElement.href.indexOf('/channel/') > -1)
+            continue;
         let ratings;
         try {
             ratings = await getRatings({ id: tileElement.href });
@@ -659,8 +679,11 @@ async function handleVisibleTiles() {
             ratingsElement.style.position = 'absolute';
             tileElement.parentElement.parentElement.style.height = '249px';
         }
-        tileElement.appendChild(ratingsElement);
-        fadeIn(ratingsElement, 0.0);
+        // Prevents an edge-case.
+        if (tileElement.getElementsByClassName('ratings').length == 0) {
+            tileElement.appendChild(ratingsElement);
+            fadeIn(ratingsElement, 0.0);
+        }
     }
 }
 function fadeIn(item, i) {
@@ -843,7 +866,9 @@ function getPageType() {
         else if (window.location.href.indexOf(":type:series") > -1
             || window.location.href.indexOf(":type:feature") > -1
             || window.location.href.indexOf("/show/") > -1
-            || window.location.href.indexOf("/movie/") > -1) {
+            || window.location.href.indexOf("/movie/") > -1
+            || window.location.href.indexOf("/mini-series/") > -1
+            || window.location.href.indexOf("/standalone/") > -1) {
             currPage = PageType.Details;
         }
         else if (window.location.href.indexOf("/page/urn:hbo:page:") > -1
@@ -851,7 +876,8 @@ function getPageType() {
             || window.location.href.indexOf(":franchise:") > -1
             || window.location.href == "https://play.max.com/"
             || window.location.href == "https://play.max.com/home"
-            || window.location.href.indexOf("https://play.max.com/search") > -1) {
+            || window.location.href.indexOf("https://play.max.com/search") > -1
+            || window.location.href.indexOf("https://play.max.com/channel") > -1) {
             currPage = PageType.Homepage;
         }
         else {
