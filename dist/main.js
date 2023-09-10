@@ -651,11 +651,11 @@ async function handleVisibleTiles() {
         const ratingsElement = document.createElement("h2");
         ratingsElement.className = "ratings css-1rynq56 r-dnmrzs r-1udh08x r-1udbk01 r-3s2u2q r-1iln25a";
         ratingsElement.innerHTML = `IMDb: <span style="color:${ratings.imdb_color}">${ratings.imdb_rating}</span>\u00A0Rotten Tomatoes: <span style="color:${ratings.rt_color}">${ratings.rt_rating}</span>`;
-        ratingsElement.setAttribute('style', 'color: rgba(255, 255, 255, 0.7); font-family: StreetLCG2; font-weight: 400; font-style: normal; font-size: 10px; letter-spacing: 0.5px; line-height: 18px;');
+        ratingsElement.setAttribute('style', 'color: rgba(255, 255, 255, 0.7); font-family: StreetLCG2; font-weight: 400; font-style: normal; font-size: 9px; letter-spacing: 0.5px; line-height: 18px;');
         ratingsElement.style.opacity = '0';
         // Special UI for top ten series/movies section on homepage.
         if (isTopTen) {
-            ratingsElement.style.marginLeft = '80px';
+            ratingsElement.style.marginLeft = '70px';
             ratingsElement.style.position = 'absolute';
             tileElement.parentElement.parentElement.style.height = '249px';
         }
