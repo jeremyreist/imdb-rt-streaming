@@ -1,7 +1,7 @@
 <img align="right" src="https://github.com/jeremyreist/imdb-rt-streaming/blob/main/listing/64.png" alt="IMDb & Rotten Tomaotes for Streaming">
 
-# SVODEX / IMDb & Rotten Tomaotes for Streaming
-A chrome extension that adds ratings to streaming sites.
+# SVODEX // IMDb & Rotten Tomatoes for Streaming
+A Chrome extension that adds ratings to streaming sites.
 
 ## Installation
 1. Run `npm i` to install the dependencies

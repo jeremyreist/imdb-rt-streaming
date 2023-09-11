@@ -656,8 +656,8 @@ async function handleVisibleTiles() {
             continue;
         // Prevent duplicates being added from other threads.
         tilesLoadedOrBeingLoaded.add(showName);
-        // Do not add ratings for channels.
-        if (tileElement.href.indexOf('/channel/') > -1)
+        // Do not add ratings for channels, or specific episodes.
+        if (tileElement.href.indexOf('/channel/') > -1 || tileElement.href.indexOf('/video/watch/') > -1)
             continue;
         let ratings;
         try {
