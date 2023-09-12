@@ -181,7 +181,10 @@ function getPageType(): PageType {
       || window.location.href == "https://play.max.com/"
       || window.location.href == "https://play.max.com/home"
       || window.location.href.indexOf("https://play.max.com/search") > -1
-      || window.location.href.indexOf("https://play.max.com/channel") > -1) {
+      || window.location.href.indexOf("https://play.max.com/channel") > -1
+      || window.location.href.indexOf("https://play.max.com/series") > -1
+      || window.location.href.indexOf("https://play.max.com/movies") > -1
+      || window.location.href.indexOf("https://play.max.com/new-and-notable") > -1) {
       currPage = PageType.Homepage
     } else {
       currPage = PageType.None
