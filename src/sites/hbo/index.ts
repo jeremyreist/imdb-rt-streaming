@@ -247,7 +247,9 @@ async function handleVisibleTiles() {
       // The row of tiles containing this tile.
       tileSection = tileElement.parentElement.parentElement.parentElement.parentElement.parentElement;
       isTopTen = tileSection.getAttribute("data-testid") == "home-page-rail-top-10-movies_numberedRail"
-        || tileSection.getAttribute("data-testid") == "home-page-rail-top-10-series_numberedRail";
+        || tileSection.getAttribute("data-testid") == "home-page-rail-top-10-series_numberedRail" 
+        || tileSection.getAttribute("data-testid") == "movies-featured-rail-top-10_numberedRail"
+        || tileSection.getAttribute("data-testid") == "series-page-featured-tab-rail-top-10-no-badges_numberedRail";
     }
     catch (error) {
       // Don't do anything, since this can actually be expected behavior in certain cases
@@ -263,7 +265,10 @@ async function handleVisibleTiles() {
     // Prevent duplicates being added from other threads.
     tilesLoadedOrBeingLoaded.add(showName);
     // Do not add ratings for channels, or specific episodes.
-    if(tileElement.href.indexOf('/channel/') > -1 || tileElement.href.indexOf('/video/watch/') > -1) continue;
+    if(tileElement.href.indexOf('/channel/') > -1 
+    || tileElement.href.indexOf('/video/watch/') > -1
+    || tileElement.href.indexOf('/genre/') > -1
+    || tileElement.href.indexOf('/audio-description') > -1) continue;
     let ratings;
     try {
       ratings = await getRatings({ id: tileElement.href });
