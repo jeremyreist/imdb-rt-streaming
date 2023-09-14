@@ -284,38 +284,12 @@ async function onNetflixDetailsPage() {
             handleShowInformationCard(lastViewedTitleHref);
     }
 }
-async function onNetflixWatchPage(titleHref) {
-    const spliceIndex = window.location.href.indexOf("watch/") + "watch/".length;
-    const episodeID = window.location.href.slice(spliceIndex, spliceIndex + 8);
-    var limit = 0;
-    getRatings({ id: titleHref, episode: episodeID, click: true });
-    // Waits for the video to load.
-    while (!document.getElementsByTagName('video').length || limit > 50) {
-        limit += 1;
-        await delay(500);
-    }
-    var endTime;
-    var startTime;
-    var duration;
-    startTime = document.getElementsByTagName('video')[0].currentTime;
-    duration = document.getElementsByTagName('video')[0].duration;
-    // While we are still watching the show, update the end time.
-    while (window.location.href.indexOf(`watch/${episodeID}`) > 0) {
-        try {
-            if (window.location.href.indexOf(`watch/${episodeID}`) > 0) {
-                if (!isNaN(document.getElementsByTagName('video')[0].currentTime)) {
-                    endTime = document.getElementsByTagName('video')[0].currentTime;
-                }
-            }
-        }
-        catch {
-            break;
-        }
-        await delay(10);
-    }
-    const start = Math.floor((startTime / duration) * 100);
-    const end = Math.floor((endTime / duration) * 100);
-    getRatings({ id: titleHref, episode: episodeID, click: true, start: start, end: end });
+function onNetflixWatchPage() {
+    const sliceIndex = window.location.href.indexOf("watch/") + "watch/".length;
+    const episodeID = window.location.href.slice(sliceIndex, sliceIndex + 8);
+    const start = 0;
+    const end = 1;
+    getRatings({ id: window.location.href, episode: episodeID, click: true, start: start, end: end });
 }
 async function handleShowInformationCard(titleHref) {
     const parent = document.getElementsByClassName("detail-modal-container")[0]; // Info box.
@@ -524,64 +498,11 @@ async function onHBODetailsScreen() {
     }
 }
 async function onHBOWatchPage(titleHref) {
-    if (titleHref.indexOf("?exitPageUrn") > 0) {
-        titleHref = titleHref.slice(0, titleHref.indexOf("?exitPageUrn"));
-    }
-    var spliceIndex = window.location.href.indexOf(":episode:") + ":episode:".length;
-    if (spliceIndex == 8) {
-        spliceIndex = window.location.href.indexOf(":feature:") + ":feature:".length;
-    }
-    // 21 is length of ID
-    const episodeID = window.location.href.slice(spliceIndex, spliceIndex + 21);
-    var exitPageUrn = null;
-    if (window.location.href.indexOf('?exitPageUrn=') > 0 && window.location.href.indexOf('episode') > 0) {
-        exitPageUrn = window.location.href.slice(window.location.href.indexOf('?exitPageUrn=') + '?exitPageUrn='.length);
-    }
-    var limit = 0;
-    if (titleHref.indexOf('series') == 0) {
-        titleHref = "";
-    }
-    else if (exitPageUrn) {
-        titleHref = 'https://play.hbomax.com' + exitPageUrn.replace('series', 'page') + ':type:series';
-    }
-    getRatings({ id: titleHref, episode: episodeID, click: true });
-    await delay(5000);
-    // Waits for the video to load.
-    while (!document.getElementsByTagName('video').length || limit > 50) {
-        limit += 1;
-        await delay(500);
-    }
-    var endTime;
-    var startTime;
-    var duration;
-    startTime = document.getElementsByTagName('video')[0].currentTime;
-    duration = document.getElementsByTagName('video')[0].duration;
-    // While we are still watching the show, update the end time.
-    while (window.location.href.indexOf(episodeID) > 0) {
-        try {
-            if (window.location.href.indexOf(episodeID) > 0) {
-                if (!isNaN(document.getElementsByTagName('video')[0].currentTime)) {
-                    endTime = document.getElementsByTagName('video')[0].currentTime;
-                }
-            }
-        }
-        catch (error) {
-            console.log(error);
-            break;
-        }
-        await delay(10);
-    }
-    var start = Math.floor((startTime / duration) * 100);
-    var end = Math.floor((endTime / duration) * 100);
-    if (isNaN(start)) {
-        console.log('Got NAN for start');
-        start = 0;
-    }
-    if (isNaN(end)) {
-        console.log('Got NAN for end');
-        end = 0;
-    }
-    getRatings({ id: titleHref, episode: episodeID, click: true, start: start, end: end });
+    const episodeIDBeginIndex = window.location.href.indexOf("watch/") + "watch/".length;
+    const episodeID = window.location.href.slice(episodeIDBeginIndex, window.location.href.indexOf("/", episodeIDBeginIndex));
+    var start = 0;
+    var end = 1;
+    getRatings({ id: window.location.href, episode: episodeID, click: true, start: start, end: end });
 }
 async function hbo_handleTitleCardHover() {
     const hoveredTitleCard = Array.from(document.querySelectorAll(":hover")).pop().closest('a');
@@ -641,10 +562,7 @@ async function handleVisibleTiles() {
         try {
             // The row of tiles containing this tile.
             tileSection = tileElement.parentElement.parentElement.parentElement.parentElement.parentElement;
-            isTopTen = tileSection.getAttribute("data-testid") == "home-page-rail-top-10-movies_numberedRail"
-                || tileSection.getAttribute("data-testid") == "home-page-rail-top-10-series_numberedRail"
-                || tileSection.getAttribute("data-testid") == "movies-featured-rail-top-10_numberedRail"
-                || tileSection.getAttribute("data-testid") == "series-page-featured-tab-rail-top-10-no-badges_numberedRail";
+            isTopTen = tileSection.getAttribute("data-testid").indexOf("top-10") > -1;
         }
         catch (error) {
             // Don't do anything, since this can actually be expected behavior in certain cases
@@ -769,41 +687,40 @@ async function onLoad(event) {
 // Maxiumum one call per DOM change.
 var previousDomChangeType = null;
 async function onDomChange() {
+    const currPageType = getPageType();
     if (currSite === StreamingSite.Netflix) {
-        if (getPageType() === PageType.Homepage) {
+        if (currPageType === PageType.Homepage) {
             onNetflixHomepage();
             previousDomChangeType = PageType.Homepage;
         }
         if (oldHref != document.location.href) {
             oldHref = document.location.href;
-            if (getPageType() === PageType.Details) {
+            if (currPageType === PageType.Details) {
                 onNetflixDetailsPage();
                 previousDomChangeType = PageType.Details;
             }
-            if (getPageType() === PageType.Watching && previousDomChangeType != PageType.Watching) {
+            if (currPageType === PageType.Watching && previousDomChangeType != PageType.Watching) {
                 previousDomChangeType = PageType.Watching;
-                if (src_lastViewedTitleHref) {
-                    onNetflixWatchPage(src_lastViewedTitleHref);
-                }
+                onNetflixWatchPage();
             }
         }
     }
     // ------------------
-    if (currSite === StreamingSite.DisneyPlus) {
+    else if (currSite === StreamingSite.DisneyPlus) {
         // We can't do disney plus ratings on hover on the main page
         // this is because we don't have access to the link of the show/movie at any point, anywhere on the homepage.
         // the most we can get is the title of the show in the current language, but that could cause issues.
-        if (getPageType() === PageType.Homepage && previousDomChangeType != PageType.Homepage) {
+        if (currPageType === PageType.Homepage && previousDomChangeType != PageType.Homepage) {
             previousDomChangeType = PageType.Homepage;
             src_lastViewedTitleHref = null;
         }
         // We can only load the rating on the details screen.
-        if (getPageType() === PageType.Details && src_lastViewedTitleHref != window.location.href) {
+        if (currPageType === PageType.Details && src_lastViewedTitleHref != window.location.href) {
             previousDomChangeType = PageType.Details;
             src_lastViewedTitleHref = window.location.href;
             onDisneyDetailsScreen();
         }
-        if (getPageType() === PageType.Watching && previousDomChangeType != PageType.Watching) {
+        if (currPageType === PageType.Watching && previousDomChangeType != PageType.Watching) {
             previousDomChangeType = PageType.Watching;
             if (src_lastViewedTitleHref) {
                 onDisneyWatchPage(src_lastViewedTitleHref);
@@ -811,8 +728,8 @@ async function onDomChange() {
         }
     }
     // ------------------
-    if (currSite === StreamingSite.HBOMax) {
-        if (getPageType() === PageType.Homepage) {
+    else if (currSite === StreamingSite.HBOMax) {
+        if (currPageType === PageType.Homepage) {
             if (previousDomChangeType != PageType.Homepage || oldHref != window.location.href) {
                 clearAllHBOTiles();
             }
@@ -820,7 +737,7 @@ async function onDomChange() {
             previousDomChangeType = PageType.Homepage;
             onHBOHomepage();
         }
-        if (getPageType() === PageType.Details && (src_lastViewedTitleHref != window.location.href || window.location.href.indexOf("play.max.com") > -1)) {
+        if (currPageType === PageType.Details && (src_lastViewedTitleHref != window.location.href || window.location.href.indexOf("play.max.com") > -1)) {
             if (previousDomChangeType != PageType.Details || oldHref != window.location.href) {
                 clearAllHBOTiles();
             }
@@ -829,7 +746,7 @@ async function onDomChange() {
             src_lastViewedTitleHref = window.location.href;
             onHBODetailsScreen();
         }
-        if (getPageType() === PageType.Watching && previousDomChangeType != PageType.Watching) {
+        if (currPageType === PageType.Watching && previousDomChangeType != PageType.Watching) {
             previousDomChangeType = PageType.Watching;
             ``;
             onHBOWatchPage(src_lastViewedTitleHref);
@@ -865,7 +782,8 @@ function getPageType() {
         }
     }
     if (currSite === StreamingSite.HBOMax) {
-        if (window.location.href.indexOf("player") > -1) {
+        if (window.location.href.indexOf("player") > -1
+            || window.location.href.indexOf("video/watch") > -1) {
             currPage = PageType.Watching;
         }
         else if (window.location.href.indexOf(":type:series") > -1

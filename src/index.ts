@@ -63,45 +63,44 @@ async function onLoad(event: Event) {
 var previousDomChangeType = null;
 
 async function onDomChange() {
+  const currPageType = getPageType();
   if (currSite === StreamingSite.Netflix) {
-    if (getPageType() === PageType.Homepage) {
+    if (currPageType === PageType.Homepage) {
       onNetflixHomepage();
       previousDomChangeType = PageType.Homepage
     }
     if (oldHref != document.location.href) {
       oldHref = document.location.href;
-      if (getPageType() === PageType.Details) {
+      if (currPageType === PageType.Details) {
         onNetflixDetailsPage();
         previousDomChangeType = PageType.Details
       }
-      if (getPageType() === PageType.Watching && previousDomChangeType != PageType.Watching) {
+      if (currPageType === PageType.Watching && previousDomChangeType != PageType.Watching) {
         previousDomChangeType = PageType.Watching
-        if (lastViewedTitleHref) {
-          onNetflixWatchPage(lastViewedTitleHref);
-        }
+        onNetflixWatchPage();
       }
     }
   }
 
   // ------------------
 
-  if (currSite === StreamingSite.DisneyPlus) {
+  else if (currSite === StreamingSite.DisneyPlus) {
     // We can't do disney plus ratings on hover on the main page
     // this is because we don't have access to the link of the show/movie at any point, anywhere on the homepage.
     // the most we can get is the title of the show in the current language, but that could cause issues.
-    if (getPageType() === PageType.Homepage && previousDomChangeType != PageType.Homepage) {
+    if (currPageType === PageType.Homepage && previousDomChangeType != PageType.Homepage) {
       previousDomChangeType = PageType.Homepage
       lastViewedTitleHref = null;
     }
 
     // We can only load the rating on the details screen.
-    if (getPageType() === PageType.Details && lastViewedTitleHref != window.location.href) {
+    if (currPageType === PageType.Details && lastViewedTitleHref != window.location.href) {
       previousDomChangeType = PageType.Details
       lastViewedTitleHref = window.location.href;
       onDisneyDetailsScreen();
     }
 
-    if (getPageType() === PageType.Watching && previousDomChangeType != PageType.Watching) {
+    if (currPageType === PageType.Watching && previousDomChangeType != PageType.Watching) {
       previousDomChangeType = PageType.Watching
       if (lastViewedTitleHref) {
         onDisneyWatchPage(lastViewedTitleHref);
@@ -111,8 +110,8 @@ async function onDomChange() {
 
   // ------------------
 
-  if (currSite === StreamingSite.HBOMax) {
-    if (getPageType() === PageType.Homepage) {
+  else if (currSite === StreamingSite.HBOMax) {
+    if (currPageType === PageType.Homepage) {
       if (previousDomChangeType != PageType.Homepage || oldHref != window.location.href) {
         clearAllHBOTiles();
       }
@@ -121,7 +120,7 @@ async function onDomChange() {
       onHBOHomepage();
     }
 
-    if (getPageType() === PageType.Details && (lastViewedTitleHref != window.location.href || window.location.href.indexOf("play.max.com") > -1)) {
+    if (currPageType === PageType.Details && (lastViewedTitleHref != window.location.href || window.location.href.indexOf("play.max.com") > -1)) {
       if (previousDomChangeType != PageType.Details || oldHref != window.location.href) {
         clearAllHBOTiles();
       }
@@ -131,7 +130,7 @@ async function onDomChange() {
       onHBODetailsScreen();
     }
 
-    if (getPageType() === PageType.Watching && previousDomChangeType != PageType.Watching) {
+    if (currPageType === PageType.Watching && previousDomChangeType != PageType.Watching) {
       previousDomChangeType = PageType.Watching; ``
       onHBOWatchPage(lastViewedTitleHref);
     }
@@ -166,7 +165,8 @@ function getPageType(): PageType {
   }
 
   if (currSite === StreamingSite.HBOMax) {
-    if (window.location.href.indexOf("player") > -1) {
+    if (window.location.href.indexOf("player") > -1
+      || window.location.href.indexOf("video/watch") > -1) {
       currPage = PageType.Watching
     } else if (window.location.href.indexOf(":type:series") > -1
       || window.location.href.indexOf(":type:feature") > -1

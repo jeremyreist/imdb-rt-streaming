@@ -22,43 +22,14 @@ export async function onNetflixDetailsPage() {
   }
 }
 
-export async function onNetflixWatchPage(titleHref: string) {
-  const spliceIndex = window.location.href.indexOf("watch/") + "watch/".length;
-  const episodeID = window.location.href.slice(spliceIndex, spliceIndex + 8);
-  var limit = 0;
+export function onNetflixWatchPage() {
+  const sliceIndex = window.location.href.indexOf("watch/") + "watch/".length;
+  const episodeID = window.location.href.slice(sliceIndex, sliceIndex + 8);
 
-  getRatings({ id: titleHref, episode: episodeID, click: true });
+  const start = 0;
+  const end = 1;
 
-  // Waits for the video to load.
-  while (!document.getElementsByTagName('video').length || limit > 50) {
-    limit += 1;
-    await delay(500);
-  }
-  var endTime: number
-  var startTime: number
-  var duration: number;
-
-  startTime = document.getElementsByTagName('video')[0].currentTime;
-  duration = document.getElementsByTagName('video')[0].duration;
-
-  // While we are still watching the show, update the end time.
-  while (window.location.href.indexOf(`watch/${episodeID}`) > 0) {
-    try {
-      if (window.location.href.indexOf(`watch/${episodeID}`) > 0) {
-        if (!isNaN(document.getElementsByTagName('video')[0].currentTime)) {
-          endTime = document.getElementsByTagName('video')[0].currentTime;
-        }
-      }
-    } catch {
-      break;
-    }
-    await delay(10);
-  }
-
-  const start = Math.floor((startTime / duration) * 100);
-  const end = Math.floor((endTime / duration) * 100);
-
-  getRatings({ id: titleHref, episode: episodeID, click: true, start: start, end: end });
+  getRatings({ id: window.location.href, episode: episodeID, click: true, start: start, end: end });
 }
 
 async function handleShowInformationCard(titleHref: string) {
