@@ -1,6 +1,10 @@
 export interface Rating {
   rt_rating: string;
+  rt_audience_rating: string;
   rt_color: string;
+  rt_audience_color: string;
+  rt_critic_icon : string;
+  rt_audience_icon: string;
   imdb_rating: string;
   imdb_color: string;
 }
@@ -14,16 +18,22 @@ export interface ApiParams {
   end?: number;
 }
 
-export async function getRatings(params: ApiParams): Promise<Rating> {
-  const {id, episode, api = "8mds8d7d55", click, start, end} = {...params}
+let critic_fresh_src = chrome.runtime.getURL("critic_fresh.svg");
+let critic_rotten_src = chrome.runtime.getURL("critic_rotten.svg");
+let audience_fresh_src = chrome.runtime.getURL("audience_fresh.svg");
+let audience_rotten_src = chrome.runtime.getURL("audience_rotten.svg");
 
+export async function getRatings(params: ApiParams): Promise<Rating> {
+  const { id, episode, api = "8mds8d7d55", click, start, end } = { ...params }
+  let colorsEnabled = (await chrome.storage.sync.get({ 'color': true })).color;
   if (!click) {
     const localRating = await checkLocalStorage(id);
-    if (localRating){
+    if (localRating) {
+      updateLocalRatingColors(localRating, colorsEnabled);
       return localRating
     }
   }
-  
+
   const apiUrl = new URL(`https://filmtoro.com/api/watch.asp`);
   apiUrl.searchParams.append('id', id);
   apiUrl.searchParams.append('api', api);
@@ -34,10 +44,32 @@ export async function getRatings(params: ApiParams): Promise<Rating> {
   if (typeof end !== 'undefined') apiUrl.searchParams.append('end', end.toString());
 
   const request = await fetch(apiUrl);
-  const response = formatApiData(await request.json())
+  const response = formatApiData(await request.json(), colorsEnabled)
   await addToLocalStorage(id, response);
   return response
-  
+}
+
+function updateLocalRatingColors(rating, colorsEnabled) {
+  if (colorsEnabled) {
+    let rt_integer, imdb_integer, rt_audience_integer;
+    // Edge case: rating = 100. 
+    if(rating.rt_rating.length > 3) rt_integer = 100;
+    else rt_integer = parseInt(rating.rt_rating.slice(0, 2));
+    if(rating.rt_audience_rating.length > 3) rt_audience_integer = 100;
+    else rt_audience_integer = parseInt(rating.rt_audience_rating.slice(0, 2));
+    imdb_integer = parseInt(rating.imdb_rating.slice(0, 1)) * 10 + parseInt(rating.imdb_rating.slice(2));
+
+    if(!isNaN(rt_integer))
+      rating.rt_color = getHexColor(rt_integer);
+    if(!isNaN(imdb_integer))
+      rating.imdb_color = getHexColor(imdb_integer);
+    if(!isNaN(rt_audience_integer))
+      rating.rt_audience_color = getHexColor(rt_audience_integer);
+  }
+  else {
+    rating.imdb_color = "#FFF";
+    rating.rt_color = "#FFF";
+  }
 }
 
 async function checkLocalStorage(titleHref: string): Promise<Rating | null> {
@@ -45,7 +77,7 @@ async function checkLocalStorage(titleHref: string): Promise<Rating | null> {
   if (!localStorage.previous_ratings) {
     return null
   } else {
-    if (localStorage.previous_ratings[titleHref]){
+    if (localStorage.previous_ratings[titleHref]) {
       return localStorage.previous_ratings[titleHref]
     }
     return null
@@ -59,8 +91,8 @@ async function addToLocalStorage(titleHref: string, rating: Rating) {
   if (!result.previous_ratings) {
     // If we have not stored previous ratings before
     initial_ratings[titleHref] = rating;
-    await chrome.storage.local.set({ 
-      previous_ratings: initial_ratings 
+    await chrome.storage.local.set({
+      previous_ratings: initial_ratings
     });
   } else if (!(titleHref in result.previous_ratings)) {
     // If we have stored ratings and it's not already stored
@@ -71,27 +103,50 @@ async function addToLocalStorage(titleHref: string, rating: Rating) {
   }
 }
 
-function formatApiData(apiData: any): Rating {
-  let output = {rt_rating: 'N/A', imdb_rating: 'N/A', imdb_color: "#FFF", rt_color: "#FFF"}
+function formatApiData(apiData: any, colorsEnabled): Rating {
+  let output = {
+    rt_rating: 'N/A', imdb_rating: 'N/A', rt_audience_rating: '',
+    imdb_color: "#FFF", rt_color: "#FFF", rt_audience_color: "#FFF",
+    rt_critic_icon: '', rt_audience_icon: ''
+  }
   if (apiData['film_imdb_rating'] > 0) {
-    output.imdb_rating = "".concat((apiData['film_imdb_rating'] / 10).toFixed(1));
-    if (apiData['film_imdb_rating'] > 83) {
-        output.imdb_color = '#2ECC71';
-    }
-    else if (apiData['film_imdb_rating'] < 70) {
-        output.imdb_color = '#C70039';
-    }
+    output.imdb_rating = `${(apiData['film_imdb_rating'] / 10).toFixed(1)}`;
+    output.imdb_color = colorsEnabled ? getHexColor(apiData['film_imdb_rating']) : "#FFF";
   }
   if (apiData['film_rt_rating'] > 0) {
-      output.rt_rating = "".concat(apiData['film_rt_rating'], "%");
-      if (apiData['film_rt_rating'] > 83) {
-          output.rt_color = '#2ECC71';
-      }
-      else if (apiData['film_rt_rating'] < 70) {
-          output.rt_color = '#C70039';
-      }
+    output.rt_rating = `${apiData['film_rt_rating']}%`;
+    output.rt_critic_icon = apiData['film_rt_rating'] >= 50 ?  critic_fresh_src : critic_rotten_src;
+    output.rt_color = colorsEnabled ? getHexColor(apiData['film_rt_rating']) : "#FFF";
   }
-  return output;
+  if (apiData['film_rt_audience'] > 0) {
+    output.rt_audience_rating = `${apiData['film_rt_audience']}%`;
+    output.rt_audience_icon = apiData['film_rt_audience'] >= 50 ?  audience_fresh_src : audience_rotten_src;
+    output.rt_audience_color = colorsEnabled ? getHexColor(apiData['film_rt_audience']) : "#FFF";
+  }
+  return output
+}
+
+function getHexColor(rating) {
+  // Define the endpoint colors
+  const startColor = [237, 38, 48]; // Bright Red (RGB)
+  const endColor = [17, 217, 17];  // Bright Green (RGB)
+
+  // Calculate the interpolated color
+  const lerpedColor = startColor.map((startValue, index) => {
+    const endValue = endColor[index];
+    return Math.round(startValue + (endValue - startValue) * (rating / 100));
+  });
+
+  // Convert RGB color to hex
+  return rgbToHex(lerpedColor);
+}
+
+// Helper function to convert RGB color to hex color
+function rgbToHex(rgb) {
+  return `#${rgb.map(val => {
+    const hex = val.toString(16);
+    return hex.length === 1 ? `0${hex}` : hex;
+  }).join('')}`;
 }
 
 export function delay(time: number) {
@@ -149,14 +204,14 @@ export function addLoader(parent: Element, scale: number = 1, insertBefore: bool
   </style>
   `;
   loader.setAttribute('style', `transform: scale(${scale});`)
-  if(insertBefore){
+  if (insertBefore) {
     parent.insertBefore(loader, parent.children[0]);
   } else {
-  parent.appendChild(loader);
+    parent.appendChild(loader);
   }
 }
 
-export function removeLoader(parent: Element){
+export function removeLoader(parent: Element) {
   const loader = parent.getElementsByClassName("ratings-loader")[0];
   parent.removeChild(loader);
 }

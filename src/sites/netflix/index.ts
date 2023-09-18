@@ -17,48 +17,19 @@ export async function onNetflixDetailsPage() {
     handleShowInformationCard(lastViewedTitleHref);
   else {
     lastViewedTitleHref = getAlternateTitleHref();
-    if(lastViewedTitleHref)
+    if (lastViewedTitleHref)
       handleShowInformationCard(lastViewedTitleHref);
   }
 }
 
-export async function onNetflixWatchPage(titleHref: string) {
-  const spliceIndex = window.location.href.indexOf("watch/") + "watch/".length;
-  const episodeID = window.location.href.slice(spliceIndex, spliceIndex + 8);
-  var limit = 0;
+export function onNetflixWatchPage() {
+  const sliceIndex = window.location.href.indexOf("watch/") + "watch/".length;
+  const episodeID = window.location.href.slice(sliceIndex, sliceIndex + 8);
 
-  getRatings({ id: titleHref, episode: episodeID, click: true });
+  const start = 0;
+  const end = 1;
 
-  // Waits for the video to load.
-  while (!document.getElementsByTagName('video').length || limit > 50) {
-    limit += 1;
-    await delay(500);
-  }
-  var endTime: number
-  var startTime: number
-  var duration: number;
-
-  startTime = document.getElementsByTagName('video')[0].currentTime;
-  duration = document.getElementsByTagName('video')[0].duration;
-
-  // While we are still watching the show, update the end time.
-  while (window.location.href.indexOf(`watch/${episodeID}`) > 0) {
-    try {
-      if (window.location.href.indexOf(`watch/${episodeID}`) > 0) {
-        if (!isNaN(document.getElementsByTagName('video')[0].currentTime)) {
-          endTime = document.getElementsByTagName('video')[0].currentTime;
-        }
-      }
-    } catch {
-      break;
-    }
-    await delay(10);
-  }
-
-  const start = Math.floor((startTime / duration) * 100);
-  const end = Math.floor((endTime / duration) * 100);
-
-  getRatings({ id: titleHref, episode: episodeID, click: true, start: start, end: end });
+  getRatings({ id: window.location.href, episode: episodeID, click: true, start: start, end: end });
 }
 
 async function handleShowInformationCard(titleHref: string) {
@@ -83,14 +54,17 @@ async function handleShowInformationCard(titleHref: string) {
     <div class="evidence-list">
       <div class="evidence-item">
         <span class="evidence-text" style="font-size:20px">
-          IMDb: <span style="color:${ratings.imdb_color}">${ratings.imdb_rating}</span> 
+          IMDb: <span style="color:${ratings.imdb_color}">${ratings.imdb_rating}</span>
         </span>
       </div>
       <div class="evidence-item">
         <span class="evidence-separator"></span>
         <span class="evidence-text" style="font-size:20px">
-          Rotten Tomatoes: <span style="color:${ratings.rt_color}">${ratings.rt_rating}</span> 
+          Rotten Tomatoes: <span style="color:${ratings.rt_color}">${ratings.rt_rating}</span>\u00A0<img style="width:15px" src="${ratings.rt_critic_icon}">
+          \u00A0<span style="color:${ratings.rt_audience_color}"> ${ratings.rt_audience_rating}\u00A0</span>
+          <img style="width:15px" src="${ratings.rt_audience_icon}">
         </span>
+        
       </div>
     </div>
   </div>
@@ -120,7 +94,7 @@ async function handleTitleCardHover(titleHref: string) {
       <div class="evidence-item">
         <span class="evidence-separator"></span>
         <span class="evidence-text">
-          Rotten Tomatoes: <span style="color:${ratings.rt_color}">${ratings.rt_rating}</span> 
+          Rotten Tomatoes: <span style="color:${ratings.rt_color}">${ratings.rt_rating}</span>\u00A0<img style="width:13px" src="${ratings.rt_critic_icon}"> 
         </span>
       </div>
     </div>
@@ -154,14 +128,12 @@ export function getNetflixTitleHref(): string | null {
 }
 
 export function getAlternateTitleHref(): string | null {
-  if (window.location.href.indexOf("title") == -1) return null;
-  try {
-    const linkElements = document.querySelectorAll("link[rel='alternate']");
-    const link = (linkElements[0] as HTMLLinkElement).href;
-    if (!link) return null;
-    return "https://" + link.slice(
-      link.indexOf("www.netflix"));
-  } catch (TypeError) {
-    return null;
+  if (window.location.href.indexOf("title") > -1) {
+    return window.location.href;
   }
+  else if (window.location.href.indexOf("jbv") > -1) {
+    let titleNumber = window.location.href.slice(window.location.href.indexOf("jbv=") + 4);
+    return "https://www.netflix.com/title/" + titleNumber;
+  }
+  return null;
 }
