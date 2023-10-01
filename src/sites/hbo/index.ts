@@ -202,7 +202,8 @@ async function handleVisibleTiles() {
     if(tileElement.href.indexOf('/channel/') > -1 
     || tileElement.href.indexOf('/video/watch/') > -1
     || tileElement.href.indexOf('/genre/') > -1
-    || tileElement.href.indexOf('/audio-description') > -1) continue;
+    || tileElement.href.indexOf('/audio-description') > -1
+    || tileElement.href.indexOf('/news') > -1) continue;
     let ratings;
     try {
       ratings = await getRatings({ id: tileElement.href });

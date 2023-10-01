@@ -173,7 +173,8 @@ function getPageType(): PageType {
       || window.location.href.indexOf("/show/") > -1
       || window.location.href.indexOf("/movie/") > -1
       || window.location.href.indexOf("/mini-series/") > -1
-      || window.location.href.indexOf("/standalone/") > -1) {
+      || window.location.href.indexOf("/standalone/") > -1
+      || window.location.href.indexOf("/topical/") > -1) {
       currPage = PageType.Details
     } else if (window.location.href.indexOf("/page/urn:hbo:page:") > -1
       || window.location.href.indexOf(":collection:") > -1
@@ -186,6 +187,7 @@ function getPageType(): PageType {
       || window.location.href.indexOf("https://play.max.com/movies") > -1
       || window.location.href.indexOf("https://play.max.com/new-and-notable") > -1
       || window.location.href.indexOf("https://play.max.com/genre/") > -1
+      || window.location.href.indexOf("https://play.max.com/news") > -1
       || window.location.href.indexOf("https://play.max.com/audio-description") > -1) {
       currPage = PageType.Homepage
     } else {
