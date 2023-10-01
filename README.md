@@ -1,5 +1,7 @@
 <img align="right" src="https://github.com/jeremyreist/imdb-rt-streaming/blob/main/src/img/logo_small.png" alt="SVODEX Logo">
+
 # SVODEX 
+
 #### Formerly (IMDb & Rotten Tomatoes for Streaming)
 Welcome to SVODEX, a Chrome extension that enhances your streaming experience by adding ratings to popular streaming sites.
 
