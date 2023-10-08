@@ -188,7 +188,10 @@ function getPageType(): PageType {
       || window.location.href.indexOf("https://play.max.com/new-and-notable") > -1
       || window.location.href.indexOf("https://play.max.com/genre/") > -1
       || window.location.href.indexOf("https://play.max.com/news") > -1
-      || window.location.href.indexOf("https://play.max.com/audio-description") > -1) {
+      || window.location.href.indexOf("https://play.max.com/audio-description") > -1
+      || window.location.href.indexOf("https://play.max.com/br-sports") > -1
+      || window.location.href.indexOf("https://play.max.com/editorial") > -1
+      || window.location.href.indexOf("https://play.max.com/franchise") > -1) {
       currPage = PageType.Homepage
     } else {
       currPage = PageType.None
