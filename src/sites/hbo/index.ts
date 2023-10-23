@@ -165,7 +165,7 @@ async function handleTitleCardHover() {
 
 async function handleVisibleTiles() {
   // Select only visible tiles.
-  let tiles = document.querySelectorAll('.StyledTileLink-Beam-Web-Ent__sc-ljn9vj-25.cWVPKn.skipNavFocusable[data-first-visible="true"]');
+  let tiles = document.querySelectorAll('[class*="StyledTileLink"][data-first-visible="true"]');
   for (let i = 0; i < tiles.length; i++) {
     allVisibleTiles.add(tiles[i]);
   }
@@ -199,11 +199,13 @@ async function handleVisibleTiles() {
     // Prevent duplicates being added from other threads.
     tilesLoadedOrBeingLoaded.add(showName);
     // Do not add ratings for channels, or specific episodes.
-    if(tileElement.href.indexOf('/channel/') > -1 
-    || tileElement.href.indexOf('/video/watch/') > -1
-    || tileElement.href.indexOf('/genre/') > -1
-    || tileElement.href.indexOf('/audio-description') > -1
-    || tileElement.href.indexOf('/news') > -1) continue;
+    if (tileElement.href.indexOf('/channel/') > -1
+      || tileElement.href.indexOf('/video/watch/') > -1
+      || tileElement.href.indexOf('/genre/') > -1
+      || tileElement.href.indexOf('/audio-description') > -1
+      || tileElement.href.indexOf('/news') > -1
+      || tileElement.href.indexOf("/editorial") > -1
+      || tileElement.href.indexOf("/franchise") > -1) continue;
     let ratings;
     try {
       ratings = await getRatings({ id: tileElement.href });
